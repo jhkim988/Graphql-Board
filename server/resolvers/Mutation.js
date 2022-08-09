@@ -1,6 +1,7 @@
 import githubLogin from '../auth/githubLogin.js';
 import naverLogin from '../auth/naverLogin.js';
 import googleLogin from '../auth/googleLogin.js';
+import { ObjectId } from 'mongodb'
 
 export default {
   githubLogin,
@@ -15,31 +16,33 @@ export default {
       ...postInfo,
       good: 0,
       bad: 0,
-      totalComments: 0,
-      userId: currentUser.id
+      created: new Date(),
+      updated: new Date(),
+      // userId: currentUser.id
     }
-    await db.collection('post').insert(newPost);
-    return newPost;
+    await db.collection('post').insertOne(newPost);
+    return {...newPost };
   },
   updatePost: async (parent, { postId, postInfo }, { db }) => {
-    const find = await db.collection('post').findOne({ id: postId });
+    const objectId = new ObjectId(postId);
+    const find = await db.collection('post').findOne({ _id: objectId });
     if (!find) {
       throw Error("There is No Post.");
     }
-    const { acknowledged } = await db.collection('post').update({ id: postId },{ ...postInfo });
+    const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, {...postInfo, updated: new Date()});
     return acknowledged;
   },
   deletePost: async (parent, { postId }, { db }) => {
-    const find = await db.collection('post').findOne({ id: postId });
+    const find = await db.collection('post').findOne({ _id: postId });
     if (!find) {
       throw Error("There is No Post.");
     }
-    const { acknowledged } = await db.collection('post').delete({ id: postId });
+    const { acknowledged } = await db.collection('post').deleteOne({ _id: postId });
     return acknowledged;
   },
   createComment: async (parent, { postId, content }, { db, currentUser, pubsub }) => {
     const newComment = { content, userId: currentUser.id, postId };
-    await db.collection('content').insert(newComment);
+    await db.collection('content').insertOne(newComment);
     pubsub.publish(`newComment${postId}`)
     return newComment;
   },

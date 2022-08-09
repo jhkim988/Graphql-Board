@@ -7,7 +7,7 @@ enum loginType {
 }
 
 type User {
-  id: ID!
+  _id: ID!
   login: String!
   loginType: loginType! 
   name: String!
@@ -18,7 +18,7 @@ type User {
   updated: DateTime!
 }
 type Post {
-  id: ID!
+  _id: ID!
   title: String!
   content: String!
   photo: String
@@ -31,7 +31,7 @@ type Post {
   updated: DateTime!
 }
 type Comment {
-  id: ID!
+  _id: ID!
   content: String!
   of: Post!
   commentedBy: User!
@@ -50,14 +50,17 @@ type Mutation {
   naverLogin(code: String!): AuthPayLoad!
   googleLogin(code: String!): AuthPayLoad!
 
-  deleteUser(userAccess: UserAccess): Boolean!
-  createPost(postInfo: PostInfo): Post!
-  updatePost(postId: ID, postInfo: PostInfo): Boolean!
-  deletePost(postId: ID): Boolean!
-  createComment(postId: ID, content: String): Comment!
-  deleteComment(commentId: ID): Comment!
-  addGood(postId: ID): Boolean!
-  addBad(postId: ID): Boolean!
+  deleteUser(userAccess: UserAccess!): String!
+
+  createPost(postInfo: PostInfo!): Post!
+  updatePost(postId: ID!, postInfo: PostInfo!): String!
+  deletePost(postId: ID!): String!
+
+  createComment(postId: ID!, content: String!): Comment!
+  deleteComment(commentId: ID!): Comment!
+
+  addGood(postId: ID!): String!
+  addBad(postId: ID!): String!
 }
 
 type Subscription {
@@ -66,8 +69,8 @@ type Subscription {
   newComment(postId: ID): Comment!
 }
 type AuthPayLoad {
-  token: String
-  user: User
+  token: String!
+  user: User!
 }
 input UserAccess {
   login: String!

@@ -3,10 +3,10 @@ import { GraphQLScalarType } from 'graphql';
 export default {
   User: {
     posted: async (parent, args, { db }) => {
-      return await db.colletion('post').find().filter(p => p.userId === parent.id);
+      return await db.colletion('post').find(p => p.userId === parent.id);
     },
     commented: async (parent, args, { db }) => {
-      return await db.collection('comment').find().filter(c => c.userId === parent.id);
+      return await db.collection('comment').find(c => c.userId === parent.id);
     }
   },
   Post: {
@@ -14,10 +14,10 @@ export default {
       return await db.collection('user').findOne(u => u.id === parent.userId);
     },
     totalComments: async (parent, args, { db }) => {
-      return await db.collection('comment').filter(c.postId === parent.id).estimatedDocumentCount();
+      return await db.collection('comment').findAll(c.postId === parent.id).estimatedDocumentCount();
     },
     comments: async (parent, args, { db }) => {
-      return await db.collection('comment').filter(c => c.postId === parent.id);
+      return await db.collection('comment').find({ postId: parent.id }).toArray();
     }
   },
   Comment: {
