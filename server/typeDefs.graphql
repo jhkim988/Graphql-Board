@@ -1,0 +1,68 @@
+scalar DateTime
+enum loginType {
+  GITHUB
+  NAVER
+  GOOGLE  
+}
+
+type User {
+  id: ID!
+  login: String!
+  loginType: loginType! 
+  name: String!
+  avatar: String
+  posted: [Posts!]!
+  commented: [Comments!]!
+}
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  score: Score
+  postedBy: User!
+  comments: [Comments!]!
+  created: DateTime!
+}
+type Score {
+  good: Int!
+  bad: Int!
+  of: Post!
+}
+type Comment {
+  id: ID!
+  content: String!
+  commentedBy: User!
+  created: DateTime!
+}
+
+type Query {
+  totalUsers: Int!
+  allUsers: [User!]!
+  totalPosts: Int!
+  allPosts: [Post!]!
+  totalComments(postId: Int!): Int!
+  allComments(postId: Int!): [Comment!]!
+}
+
+type Mutation {
+  createUser(): User!
+  updateUser(): User!
+  deleteUser(): User!
+  createPost: Post!
+  updatePost: Post!
+  deletePost: Post!
+  createComment: Comment!
+  deleteComment: Comment!
+}
+
+type Subscription {
+  commentsAlarm: Post!
+  newScore: Score!
+  newComment: Comment!
+}
+
+fragment userInfo on User {
+  login
+  loginType
+  name
+}
