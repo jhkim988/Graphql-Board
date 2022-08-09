@@ -3,14 +3,27 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db": "mongod --dbpath=\"./data/db\"",
+    "start": "nodemon -e js,json,graphql"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@graphql-tools/schema": "^8.5.1",
+    "apollo-server-core": "^3.10.0",
+    "apollo-server-express": "^3.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
     "graphql": "^16.5.0",
+    "graphql-playground-middleware-express": "^1.7.23",
+    "graphql-subscriptions": "^2.0.0",
+    "graphql-upload": "^16.0.1",
+    "graphql-ws": "^5.10.0",
+    "mongodb": "^4.8.1",
     "node-fetch": "^3.2.10"
   }
 }

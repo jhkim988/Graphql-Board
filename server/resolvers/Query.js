@@ -8,7 +8,7 @@ export default {
   totalPosts: async (parent, args, { db }) => {
     return await db.collection('post').estimatedDocumentCount()
   },
-  allPost: async (parent, {cursor, limit}, { db }) => {
+  allPosts: async (parent, {cursor, limit}, { db }) => {
     if (!cursor) return await db.collection('post').find().toArray();
     return await db.collection('post').filter(p => p.created < cursor).sort({ created: -1 }).limit(limit);
   },

@@ -12,8 +12,8 @@ type User {
   loginType: loginType! 
   name: String!
   avatar: String
-  posted: [Posts!]!
-  commented: [Comments!]!
+  posted: [Post!]!
+  commented: [Comment!]!
   created: DateTime!
   updated: DateTime!
 }
@@ -26,7 +26,7 @@ type Post {
   bad: Int!
   postedBy: User!
   totalComments: Int!
-  comments: [Comments!]!
+  comments: [Comment!]!
   created: DateTime!
   updated: DateTime!
 }
@@ -47,6 +47,9 @@ type Query {
 
 type Mutation {
   githubLogin(code: String!): AuthPayLoad!
+  naverLogin(code: String!): AuthPayLoad!
+  googleLogin(code: String!): AuthPayLoad!
+
   deleteUser(userAccess: UserAccess): Boolean!
   createPost(postInfo: PostInfo): Post!
   updatePost(postId: ID, postInfo: PostInfo): Boolean!
@@ -54,7 +57,7 @@ type Mutation {
   createComment(postId: ID, content: String): Comment!
   deleteComment(commentId: ID): Comment!
   addGood(postId: ID): Boolean!
-  addBad(postId: Id): Boolean!
+  addBad(postId: ID): Boolean!
 }
 
 type Subscription {
@@ -62,12 +65,16 @@ type Subscription {
   newScore(postId: ID): Post!
   newComment(postId: ID): Comment!
 }
-fragment UserAccess on User {
-  login
-  loginType
+type AuthPayLoad {
+  token: String
+  user: User
 }
-fragment PostInfo on Post {
-  title
-  content
-  photo
+input UserAccess {
+  login: String!
+  loginType: String!
+}
+input PostInfo {
+  title: String!
+  content: String!
+  photo: String
 }

@@ -1,6 +1,6 @@
-import githubLogin from '../auth/githubLogin';
-import naverLogin from '../auth/naverLogin';
-import googleLogin from '../auth/googleLogin';
+import githubLogin from '../auth/githubLogin.js';
+import naverLogin from '../auth/naverLogin.js';
+import googleLogin from '../auth/googleLogin.js';
 
 export default {
   githubLogin,
