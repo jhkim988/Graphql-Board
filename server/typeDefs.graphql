@@ -2,7 +2,8 @@ scalar DateTime
 enum loginType {
   GITHUB
   NAVER
-  GOOGLE  
+  GOOGLE
+  DUMMY
 }
 
 type User {
@@ -13,24 +14,26 @@ type User {
   avatar: String
   posted: [Posts!]!
   commented: [Comments!]!
+  created: DateTime!
+  updated: DateTime!
 }
 type Post {
   id: ID!
   title: String!
   content: String!
-  score: Score
-  postedBy: User!
-  comments: [Comments!]!
-  created: DateTime!
-}
-type Score {
+  photo: String
   good: Int!
   bad: Int!
-  of: Post!
+  postedBy: User!
+  totalComments: Int!
+  comments: [Comments!]!
+  created: DateTime!
+  updated: DateTime!
 }
 type Comment {
   id: ID!
   content: String!
+  of: Post!
   commentedBy: User!
   created: DateTime!
 }
@@ -39,30 +42,32 @@ type Query {
   totalUsers: Int!
   allUsers: [User!]!
   totalPosts: Int!
-  allPosts: [Post!]!
-  totalComments(postId: Int!): Int!
-  allComments(postId: Int!): [Comment!]!
+  allPosts(cursor: String, limit: Int=1): [Post!]!
 }
 
 type Mutation {
-  createUser(): User!
-  updateUser(): User!
-  deleteUser(): User!
-  createPost: Post!
-  updatePost: Post!
-  deletePost: Post!
-  createComment: Comment!
-  deleteComment: Comment!
+  githubLogin(code: String!): AuthPayLoad!
+  deleteUser(userAccess: UserAccess): Boolean!
+  createPost(postInfo: PostInfo): Post!
+  updatePost(postId: ID, postInfo: PostInfo): Boolean!
+  deletePost(postId: ID): Boolean!
+  createComment(postId: ID, content: String): Comment!
+  deleteComment(commentId: ID): Comment!
+  addGood(postId: ID): Boolean!
+  addBad(postId: Id): Boolean!
 }
 
 type Subscription {
   commentsAlarm: Post!
-  newScore: Score!
-  newComment: Comment!
+  newScore(postId: ID): Post!
+  newComment(postId: ID): Comment!
 }
-
-fragment userInfo on User {
+fragment UserAccess on User {
   login
   loginType
-  name
+}
+fragment PostInfo on Post {
+  title
+  content
+  photo
 }
