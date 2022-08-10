@@ -7,8 +7,16 @@ export default {
   githubLogin,
   naverLogin,
   googleLogin,
-  deleteUser: async (parent, { userAccess }, { db }) => {
-    const { acknowledged } = await db.collection('user').deleteOne({ userAccess });
+  deleteUser: async (parent, { userId }, { db }) => {
+    const objectId = new ObjectId(userId);
+    // delete all post and comment: Follow Service Policy
+    await db.collection('comment').deleteAll({ userId: objectId });
+    const postIdList = await db.collection('post').findAll({ userId: objectId }).toArray().map(p => p._id);
+    for (pid in postIdList) {
+      db.collection('comment').deleteAll({ postId: pid });
+    }
+    db.collection('post').deleteAll({ _id: { $in: postIdList }});
+    const { acknowledged } = await db.collection('user').deleteOne({ _id: objectId });
     return acknowledged
   },
   createPost: async (parent, { postInfo }, { db, currentUser }) => {
@@ -18,7 +26,9 @@ export default {
       bad: 0,
       created: new Date(),
       updated: new Date(),
-      // userId: currentUser.id
+      goodBy: [],
+      badBy: [],
+      userId: currentUser._id
     }
     await db.collection('post').insertOne(newPost);
     return {...newPost };
@@ -33,45 +43,70 @@ export default {
     return acknowledged;
   },
   deletePost: async (parent, { postId }, { db }) => {
-    const find = await db.collection('post').findOne({ _id: postId });
+    const objectId = new ObjectId(postId);
+    const find = await db.collection('post').findOne({ _id: objectId });
     if (!find) {
       throw Error("There is No Post.");
     }
-    const { acknowledged } = await db.collection('post').deleteOne({ _id: postId });
+
+    // delete all inner comments:
+    await db.collection('comment').deleteMany({ _id: { $in: find.comments }});
+    
+    // delete post:
+    const { acknowledged } = await db.collection('post').deleteOne({ _id: objectId });
     return acknowledged;
   },
   createComment: async (parent, { postId, content }, { db, currentUser, pubsub }) => {
-    const newComment = { content, userId: currentUser.id, postId };
+    const newComment = { content, userId: currentUser._id, postId };
     await db.collection('content').insertOne(newComment);
     pubsub.publish(`newComment${postId}`)
+    
+    // commentsAlarm
+    const postWriter = await db.collection('post').findOne({postId: new Object(postId)})
+    if (postWriter._id.toString() !== currentUser._id.toString() ) { // Does not alert to post writer.
+      pubsub(currentUser._id.toString());
+    }
+    
     return newComment;
   },
   deleteComment: async (parent, { commentId }, { db }) => {
-    const find = await db.collection('comment').findOne({ id: commentId });
+    const objectId = new ObjectId(commentId);
+    const find = await db.collection('comment').findOne({ _id: objectId });
     if (!find) {
       throw new Error("There is No Comment");
     }
-    const { acknowledged } = await db.collection('comment').deleteOne({ id: commentId });
+    const { acknowledged } = await db.collection('comment').deleteOne({ _id: objectId });
     return acknowledged;
   },
-  addGood: async (parent, { postId }, { db }) => {
-    const find = await db.collection('post').findOne({ id: postId });
+  addGood: async (parent, { postId }, { db, currentUser }) => {
+    const objectId = new ObjectId(postId);
+    const findPost = await db.collection('post').findOne({ _id: objectId });
+    if (!findPost) {
+      throw new Error("There is No Post");
+    }
+    // Does not access: Duplicate good
+    if (!findPost.goodBy.find(userId => userId == currentUser._id)) return false;
+    const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, { good: findPost.good+1 });
+    if (acknowledged) {
+      findPost.goodBy.push(currentUser._id);
+      pubsub.publish(`newScore${postId}`);
+    }
+    return acknowledged;
+  },
+  addBad: async (parent, { postId }, { db, currentUser }) => {
+    const objectId = new ObjectId(postId);
+    const find = await db.collection('post').findOne({ _id: objectId });
     if (!find) {
       throw new Error("There is No Post");
     }
-    find.good += 1;
-    const { acknowledged } = await db.collection('post').update({ id: postId }, { ...find });
-    if (acknowledged) pubsub.publish(`newScore${postId}`)
-    return acknowledged;
-  },
-  addBad: async (parent, { postId }, { db }) => {
-    const find = await db.collection('post').findOne({ id: postId });
-    if (!find) {
-      throw new Error("There is No Post");
+    // Does not access: Duplicate Bad
+    if (!findPost.badBy.find(userId => userId == currentUser._id)) return false;
+
+    const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, { bad: find.bad+1 });
+    if (acknowledged) {
+      findPost.badBy.push(currentUser._id);
+      pubsub.publish(`newScore${postId}`);
     }
-    find.good -= 1;
-    const { acknowledged } = await db.collection('post').update({ id: postId }, { ...find });
-    if (acknowledged) pubsub.publish(`newScore${postId}`)
     return acknowledged;
   }
 }

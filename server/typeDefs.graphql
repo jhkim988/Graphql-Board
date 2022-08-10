@@ -14,6 +14,8 @@ type User {
   avatar: String
   posted: [Post!]!
   commented: [Comment!]!
+  goodPost: [Post!]!
+  badPost: [Post!]!
   created: DateTime!
   updated: DateTime!
 }
@@ -27,6 +29,8 @@ type Post {
   postedBy: User!
   totalComments: Int!
   comments: [Comment!]!
+  goodBy: [User!]!
+  badBy: [User!]!
   created: DateTime!
   updated: DateTime!
 }
@@ -50,7 +54,7 @@ type Mutation {
   naverLogin(code: String!): AuthPayLoad!
   googleLogin(code: String!): AuthPayLoad!
 
-  deleteUser(userAccess: UserAccess!): String!
+  deleteUser(userId: ID!): String!
 
   createPost(postInfo: PostInfo!): Post!
   updatePost(postId: ID!, postInfo: PostInfo!): String!
