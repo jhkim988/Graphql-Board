@@ -11,7 +11,7 @@ function App() {
     <Login />
     <Main />
     </Fragment>
-  );
+    );
 }
 
 export default App;
