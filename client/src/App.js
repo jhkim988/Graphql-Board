@@ -7,9 +7,9 @@ import Login from './Login.js';
 function App() {
   return (
     <Fragment>
-    <a href='/'><h1>GraphQL Web Service</h1></a>
-    <Login />
-    <Main />
+      <a href='/'><h1>GraphQL Web Service</h1></a>
+      <Login />
+      <Main />
     </Fragment>
     );
 }

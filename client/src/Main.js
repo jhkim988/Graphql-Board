@@ -1,29 +1,29 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { gql } from "@apollo/client/core";
 import { useQuery } from "@apollo/client/react";
+import PostWindow from "./post/PostWindow.js";
+import PostCreateWindow from './post/PostCreateWindow.js'
 
 const ALL_POSTS = gql`
   query allPosts {
-    title
-    postedBy {
-      name
-    }
-    created
-    # view
-    good
+    allPosts {
+      title
+      postedBy {
+        name
+      }
+      created
+      # view
+      good
+    } 
   }
 `
 
-const PostList = () => {
-  const { loading, error, data } = useQuery(ALL_POSTS);
-  if (loading) return <p>loading...</p>
-  if (error) return <p>ERROR: {error.message}</p>
-  
+const PostList = (props) => {
   return (
-    data.allPosts.map(post => {
+    props.data.allPosts.map(post => {
       return (
         <Fragment>
-          <th>{post.title}</th>
+          <th><p onClick={post._id}>{post.title}</p></th>
           <th>{post.postedBy.name}</th>
           <th>{post.created}</th>
           <th>{post.view}</th>
@@ -35,30 +35,53 @@ const PostList = () => {
   )
 }
 
-const Main = () => (
-  <Fragment>
-    <div class='col-md-12'>
-      <div class='row'>
-        <div class='col-md-6'>
-          <a href='' role='button' class='btn btn-primary'>글 등록</a>
+const Main = () => {
+  const { loading, error, data } = useQuery(ALL_POSTS);
+  const [ viewState, setViewState ] = useState('main');
+  const [ postId, setPostId ] = useState(0);
+  const clickPostCreate = () => {
+
+  }
+  if (loading) return <p>loading...</p>
+  if (error) return <p>ERROR: {error.message}</p>
+  return (
+    <Fragment>
+      <div className='col-md-12'>
+        <div className='row'>
+          <div className='col-md-6'>
+            <button onClick={clickPostCreate} className='btn btn-primary'>글 등록</button>
+          </div>
         </div>
+        <table className='table table-horizontal table-bordered'>
+          <thead className='thead-strong'>
+            <tr>
+              <th className='col-md-6'>제목</th>
+              <th className='col-md-2'>작성자</th>
+              <th className='col-md-1'>최종수정일</th>
+              <th className='col-md-1'>조회수</th>
+              <th className='col-md-1'>댓글 수</th>
+              <th className='col-md-1'>추천</th>
+            </tr>
+          </thead>
+          <tbody id='tbody'>
+            <PostList data={data}/>
+          </tbody>
+        </table>
       </div>
-      <table class='table table-horizontal table-bordered'>
-        <thead class='thead-strong'>
-          <tr>
-            <th class='col-md-6'>제목</th>
-            <th class='col-md-2'>작성자</th>
-            <th class='col-md-2'>최종수정일</th>
-            <th class='col-md-1'>조회수</th>
-            <th class='col-md-1'>추천</th>
-          </tr>
-        </thead>
-        <tbody id='tbody'>
-          <PostList />
-        </tbody>
-      </table>
-    </div>
+      {
+        viewState === 'main' ||
+        (
+          <div className='modal'>
+            {
+              viewState === 'postcreate'
+              ? <PostCreateWindow />
+              : <PostWindow />
+            }
+          </div>
+        )
+      }
   </Fragment>
-);
+  );
+}
 
 export default Main;
