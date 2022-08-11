@@ -1,38 +1,48 @@
 import fetch from 'node-fetch'
 
-const requestGithubToken = credentials => fetch('https://github.com/login/oauth/access_token',
-  {
+const requestGithubToken = async (credentials) => {
+  const res = await fetch('https://github.com/login/oauth/access_token',{
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
     },
-    body: JSON.stringify(credentials)
+    body: JSON.stringify(credentials)});
+    return await res.json();
   }
-);
 
-const requestGithubUserAccount = token => fetch('https://api.github.com/user', {
-  method: 'GET',
-  headers: {
-    Accept: 'application/vnd.github+json',
-    Authorization: `token ${token}`
-  }
-}).then(res => res.json())
-  .catch(err => {throw new Error(err)});
+const requestGithubUserAccount = async (token) => {
+  const res = await fetch('https://api.github.com/user', {
+    method: 'GET',
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `token ${token}`
+    }
+  });
+  return await res.json();
+}
 
-export default async (parent, { code }, { db }) => {
-  const { access_token } = requestGithubToken(code);
-  const { message, avatar_url, login, name } = requestGithubUserAccount(access_token);
+const githubLogin = async (parent, { code }, { db }) => {
+  const { access_token } = await requestGithubToken(
+    {
+      code,
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET
+    });
+  const { message, avatar_url, login, name } = await requestGithubUserAccount(access_token);
   if (message) {
     throw new Error(message);
   }
-
+  console.log(login, name, avatar_url);
   const latestUserInfo = {
     login,
-    loginType: 'GITHUB',
     name,
     avatar: avatar_url,
+    loginType: 'GITHUB',
   }
-  const user = await db.collection('user').replaceOne({ login, loginType: 'GITHUB '}, latestUserInfo, { upsert: true });
-  return { user, access_token };
+  await db.collection('user').replaceOne({ login, loginType: 'GITHUB '}, latestUserInfo, { upsert: true });
+  const user = await db.collection('user').findOne({ login, loginType: 'GITHUB'});
+  return { user, token: access_token };
 }
+
+export default githubLogin;

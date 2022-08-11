@@ -64,7 +64,7 @@ const start = async() => {
 
   // CORS:
   app.use(cors({
-    origin: ['http://localhost:3000'],
+    origin: 'http://localhost:3000',
     credential: true
   }));
 

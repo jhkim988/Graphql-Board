@@ -15,7 +15,7 @@ export default {
     for (pid in postIdList) {
       db.collection('comment').deleteAll({ postId: pid });
     }
-    db.collection('post').deleteAll({ _id: { $in: postIdList }});
+    await db.collection('post').deleteAll({ _id: { $in: postIdList }});
     const { acknowledged } = await db.collection('user').deleteOne({ _id: objectId });
     return acknowledged
   },
@@ -50,7 +50,7 @@ export default {
     }
 
     // delete all inner comments:
-    await db.collection('comment').deleteMany({ _id: { $in: find.comments }});
+    await db.collection('comment').deleteMany({ postId });
     
     // delete post:
     const { acknowledged } = await db.collection('post').deleteOne({ _id: objectId });

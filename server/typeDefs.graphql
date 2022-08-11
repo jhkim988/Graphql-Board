@@ -45,8 +45,13 @@ type Comment {
 type Query {
   totalUsers: Int!
   allUsers: [User!]!
+  user(userId: ID!): User!
   totalPosts: Int!
   allPosts(cursor: String, limit: Int=1): [Post!]!
+  post(postId: ID!): Post!
+  totalComments(postId: ID!): Int!
+  allComments(postId: ID!): [Comment!]!
+  comment(commentId: ID!): Comment!
 }
 
 type Mutation {
