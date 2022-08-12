@@ -1,8 +1,9 @@
 import { Fragment, useState } from "react";
 import { gql } from "@apollo/client/core";
 import { useQuery } from "@apollo/client/react";
-import PostWindow from "./post/PostWindow.js";
 import PostCreateWindow from './post/PostCreateWindow.js'
+import PostAndComment from './post/PostAndComment.js';
+
 
 const ALL_POSTS = gql`
   query allPosts {
@@ -40,7 +41,8 @@ const Main = () => {
   const [ viewState, setViewState ] = useState('main');
   const [ postId, setPostId ] = useState(0);
   const clickPostCreate = () => {
-
+    setViewState('postCreate');
+    document.querySelector('.modal').focus();
   }
   if (loading) return <p>loading...</p>
   if (error) return <p>ERROR: {error.message}</p>
@@ -71,13 +73,13 @@ const Main = () => {
       {
         viewState === 'main' ||
         (
-          <div className='modal'>
+          <Fragment>
             {
-              viewState === 'postcreate'
-              ? <PostCreateWindow />
-              : <PostWindow />
+              viewState === 'postCreate'
+              ? <PostCreateWindow setViewState={setViewState} />
+              : <PostAndComment />
             }
-          </div>
+          </Fragment>
         )
       }
   </Fragment>

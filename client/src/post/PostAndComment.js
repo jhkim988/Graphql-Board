@@ -6,7 +6,7 @@ import PostUpdateWindow from './PostUpdateWindow.js'
 import Score from "./Score.js";
 
 const GET_POST = gql`
-  query(postId: $ID) {
+  query getPost($postId: ID!) {
     post(postId: $postId) {
       title
       content
@@ -30,12 +30,12 @@ const GET_POST = gql`
   }
 `
 const UPDATE_POST = gql`
-  mutation($postId: ID!, $postInfo: postInfo) {
+  mutation updatePost($postId: ID!, $postInfo: postInfo) {
     updatePost(postId: $postId, postInfo: $postInfo)
   }
 `
 const DELETE_POST = gql`
-  mutation(postId: ID!) {
+  mutation deletePost($postId: ID!) {
     deletePost(postId: $postId)
   }
 `
@@ -57,12 +57,12 @@ const PostAndComment = (props) => {
   if (error) return <p>Error {error.message}</p>
   return (
     <Fragment>
+      <button>X</button>
       {
       isUpdateWindow
         ? <PostUpdateWindow setPostInfo={setPostInfo} setIsUpdateWindow={setIsUpdateWindow} updatePost={updatePost}/>
         : <PostWindow data={data} />
       }
-      <CommentWindow commentsList={data.comments}/>
       <Score good={data.good} bad={data.bad} setScore={setScore}/>
       {
         isUpdateWindow && (
@@ -73,7 +73,7 @@ const PostAndComment = (props) => {
         </Fragment>
         )
       }
-
+      <CommentWindow commentsList={data.comments}/>
     </Fragment>
   )
 }

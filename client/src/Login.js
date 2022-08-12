@@ -1,53 +1,76 @@
-import { gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useApolloClient } from "@apollo/client";
 import { Fragment, useEffect, useState } from "react";
 
+const GITHUB_LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&scope=user`;
 const GITHUB_LOGIN = gql`
   mutation githubLogin($code: String!) {
     githubLogin(code: $code) {
       user {
         name
+        login
+        loginType
+        avatar
       }
       token
     }
   }
 `
+const ME = gql`
+  query me {
+    me {
+      login
+      loginType
+      name
+      avatar
+    }
+  }
+`
 
-const logout = () => {
-
-}
-const CurrentUser = ({ name, avatar }) => {
+const CurrentUser = ({ meCache, setIsLoggedIn }) => {
+  const client = useApolloClient();
+  const logout = () => {
+    localStorage.setItem('token', null);
+    client.writeQuery({ query: ME, data: null });
+    setIsLoggedIn(false);
+    // window.location.reload();
+  }
   return (
     <div className='row'>
-      <img src={avatar} width={48} height={48} alt='' className='col-2'/>
-      <p className='col-2'>Hello, {name}!</p>
+      <img src={meCache.me.avatar} width={48} height={48} alt='' className='col-2'/>
+      <p className='col-2'>Hello, {meCache.me.name}!</p>
       <button onClick={logout} className='col-1'>logout</button>
     </div>
   );
 }
 
-const getGithubLoginCode = () => {
-}
-
-const Login = (props) => {
-  const GITHUB_LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&scope=user`;
-  const [ isLoggedIn, setIsLoggedIn ] = useState(false);
+const Login = () => {
+  const client = useApolloClient();
+  const meCache = client.readQuery({ query: ME });
+  const [ isLoggedIn, setIsLoggedIn ] = useState(meCache !== null);
   const [ githubLoginMutation ] = useMutation(GITHUB_LOGIN);
-
+  
   useEffect(() => {
     if (window.location.href.match('code=')) {
       const code = window.location.search.replace('?code=', '');
-      console.log(`code: ${code}`);
       githubLoginMutation({
         variables: { code },
-        onCompleted: () => {
+        update: (cache, { data: { githubLogin: { token, user: { login, loginType, name, avatar }}}}) => {
+          client.writeQuery({
+            query: ME,
+            data: {
+              me: { login, loginType, name, avatar }
+            }
+          });
+          localStorage.setItem('token', token);
           setIsLoggedIn(true);
-          window.history.pushState(null, 'GraphQL Web Service', '/');
-      }});
+          window.history.pushState(null, 'WelCome GraphQL WebService', '/');
+        }
+      });
     }
   }, []);
 
   if (isLoggedIn) {
-    return <CurrentUser name="sample" avatar=""/>
+    return <CurrentUser setIsLoggedIn={setIsLoggedIn} meCache={meCache}/>
   } else {
     return (
       <Fragment>

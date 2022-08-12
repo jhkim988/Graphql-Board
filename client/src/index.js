@@ -11,11 +11,23 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { createUploadLink } from 'apollo-upload-client';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const cache = new InMemoryCache();
+const cache = new InMemoryCache({
+  // typePolicies: {
+  //   User: {
+  //     keyFields: ['login', 'loginType']
+  //   },
+  //   Post: {
+  //     keyFields: ["title", "postedBy", ["name"]]
+  //   },
+  //   Comment: {
+  //     keyFields: ["commentedBy", ["name"]]
+  //   }
+  // }
+});
 persistCache({ cache, storage: localStorage });
 
-if (localStorage['apollo-persist-cache']) {
-  let cacheData = JSON.parse(localStorage['apollo-persist-cache']);
+if (localStorage['apollo-cache-persist']) {
+  let cacheData = JSON.parse(localStorage['apollo-cache-persist']);
   cache.restore(cacheData);
 }
 

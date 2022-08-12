@@ -3,10 +3,10 @@ import { Fragment } from "react";
 const PostWindow = (props) => {
   return (
     <Fragment>
-      <button>X</button>
-      <input type='text'/>
-      <img alt=""/>
-      <input type='textarea'></input>
+      <p>title</p>
+      {/* <img src='' alt=''></img> */}
+      <p>content</p>
+      <p>Good: , Bad: </p>
     </Fragment>
   )
 }
