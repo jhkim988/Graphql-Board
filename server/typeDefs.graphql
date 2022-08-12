@@ -52,6 +52,7 @@ type Query {
   totalComments(postId: ID!): Int!
   allComments(postId: ID!): [Comment!]!
   comment(commentId: ID!): Comment!
+  me: User!
 }
 
 type Mutation {

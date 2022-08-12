@@ -26,6 +26,9 @@ export default {
   },
   comment: async (parent, { commentId }, { db }) => {
     return await db.collection('comemnt').findOne({ _id: commentId });
+  },
+  me: async (parent, args, { currentUser }) => {
+    return currentUser;
   }
 }
 
