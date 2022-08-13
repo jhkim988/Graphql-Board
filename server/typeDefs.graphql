@@ -28,6 +28,7 @@ type Post {
   photo: String
   good: Int!
   bad: Int!
+  viewNumber: Int!
   postedBy: User!
   totalComments: Int!
   comments: [Comment!]!
