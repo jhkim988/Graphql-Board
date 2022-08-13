@@ -16,6 +16,8 @@ export default {
     return await db.collection('post').find(p => p.created < cursor).sort({ created: -1 }).limit(limit).toArray();
   },
   post: async (parent, { postId }, { db }) => {
+    const lookPost = await db.collection('post').findOne({ _id: postId });
+    await db.collection('post').replaceOne({ _id: postId }, { viewNumber: lookPost.viewNumber+1 });
     return await db.collection('post').findOne({ _id: postId });
   },
   totalComments: async (parent, { postId }, { db }) => {

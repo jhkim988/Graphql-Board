@@ -4,7 +4,9 @@ import googleLogin from '../auth/googleLogin.js';
 import { ObjectId } from 'mongodb'
 
 const fileNameGenerator = (fileName) => {
-
+  const [ name, ext ] = fileName.spli('.');
+  name.replace(/[.\s]/g, '');
+  return `${(new Date()).toISOString().replace(/[^0-9]/g, '')}${name}.${ext}`;
 }
 
 export default {
@@ -27,12 +29,15 @@ export default {
     const { createReadStream, filename, mimetype, encoding } = await file;
     const saveName = fileNameGenerator(filename);
     const toPath = path.join(path.resolve(), 'assets', 'photos', saveName);
-    const stream = fs.createWriteStream(toPath);
+    const stream = createWriteStream();
     const out = fs.createWriteStream(toPath);
     await stream.pipe(out);
     return { filename: toPath, mimetype, encoding }
   },
   createPost: async (parent, { postInfo }, { db, currentUser }) => {
+    if (!currentUser) {
+      new Error(`Access Denied.`);
+    }
     const newPost = {
       ...postInfo,
       good: 0,
@@ -41,16 +46,20 @@ export default {
       updated: new Date(),
       goodBy: [],
       badBy: [],
+      viewNumber: 0,
       userId: currentUser._id
     }
-    await db.collection('post').insertOne(newPost);
-    return {...newPost };
+    const { insertedId } = await db.collection('post').insertOne(newPost);
+    return {...newPost, _id: insertedId };
   },
-  updatePost: async (parent, { postId, postInfo }, { db }) => {
+  updatePost: async (parent, { postId, postInfo }, { db, currentUser }) => {
     const objectId = new ObjectId(postId);
     const find = await db.collection('post').findOne({ _id: objectId });
     if (!find) {
       throw Error("There is No Post.");
+    }
+    if (find.postedBy._id != currentUser._id) {
+      new Error(`Access Denied.`);
     }
     const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, {...postInfo, updated: new Date()});
     return acknowledged;
@@ -61,7 +70,9 @@ export default {
     if (!find) {
       throw Error("There is No Post.");
     }
-
+    if (find.postedBy._id != currentUser._id) {
+      new Error(`Access Denied.`);
+    }
     // delete all inner comments:
     await db.collection('comment').deleteMany({ postId });
     
@@ -70,6 +81,9 @@ export default {
     return acknowledged;
   },
   createComment: async (parent, { postId, content }, { db, currentUser, pubsub }) => {
+    if (currentUser) {
+      new Error(`Access Denied.`);
+    }
     const newComment = { content, userId: currentUser._id, postId };
     await db.collection('content').insertOne(newComment);
     pubsub.publish(`newComment${postId}`)
@@ -87,6 +101,9 @@ export default {
     const find = await db.collection('comment').findOne({ _id: objectId });
     if (!find) {
       throw new Error("There is No Comment");
+    }
+    if (find.commentedBy._id != currentUser._id) {
+      new Error(`Access Denied.`);
     }
     const { acknowledged } = await db.collection('comment').deleteOne({ _id: objectId });
     return acknowledged;

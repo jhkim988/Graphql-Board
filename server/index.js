@@ -42,7 +42,7 @@ const start = async() => {
       // token of http or websocket
       const token = req ? req.headers.authorization: connection.context.Authorization;
       const currentUser = await db.collection('user').findOne({ token }) // todo: Identify login type
-      return { db, currentUser, login, loginType, pubsub }
+      return { db, currentUser, pubsub }
     },
     plugins: [
       // shutdown http server
