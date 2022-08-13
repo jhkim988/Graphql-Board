@@ -1,4 +1,5 @@
 import { GraphQLScalarType } from 'graphql';
+import GraphQLUpload  from 'graphql-upload/GraphQLUpload.mjs';
 
 export default {
   User: {
@@ -10,7 +11,10 @@ export default {
     },
     goodPost: async (parent, args, { db }) => {
       const findUser = await db.collection('user').findOne({ _id: parent._id });
-      return await db.collection('post').find({ _id: { $in: findUser.goodPost }}).toArray();
+      return await db.collection('post').find({ goodBy: parent._id }).toArray();
+    },
+    badPost: async (parent, args, { db }) => {
+      return await db.collection('post').find({ badBy: parent._id}).toArray();
     }
   },
   Post: {
@@ -38,5 +42,6 @@ export default {
     parseValue: value => new Date(value),
     serialize: value => (new Date(value)).toISOString(),
     parseLiteral: ast => ast.value,
-  })
+  }),
+  Upload: GraphQLUpload,
 }

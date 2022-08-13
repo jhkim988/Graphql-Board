@@ -38,11 +38,11 @@ const start = async() => {
   const server = new ApolloServer({
     schema,
     csrfPrevention: true,
-    context: async ( { req, connection }) => {
+    context: async ({ req, connection }) => {
       // token of http or websocket
       const token = req ? req.headers.authorization: connection.context.Authorization;
       const currentUser = await db.collection('user').findOne({ token }) // todo: Identify login type
-      return { db, currentUser, pubsub }
+      return { db, currentUser, login, loginType, pubsub }
     },
     plugins: [
       // shutdown http server

@@ -3,6 +3,10 @@ import naverLogin from '../auth/naverLogin.js';
 import googleLogin from '../auth/googleLogin.js';
 import { ObjectId } from 'mongodb'
 
+const fileNameGenerator = (fileName) => {
+
+}
+
 export default {
   githubLogin,
   naverLogin,
@@ -18,6 +22,15 @@ export default {
     await db.collection('post').deleteAll({ _id: { $in: postIdList }});
     const { acknowledged } = await db.collection('user').deleteOne({ _id: objectId });
     return acknowledged
+  },
+  createPhoto: async (parent, { file }) => {
+    const { createReadStream, filename, mimetype, encoding } = await file;
+    const saveName = fileNameGenerator(filename);
+    const toPath = path.join(path.resolve(), 'assets', 'photos', saveName);
+    const stream = fs.createWriteStream(toPath);
+    const out = fs.createWriteStream(toPath);
+    await stream.pipe(out);
+    return { filename: toPath, mimetype, encoding }
   },
   createPost: async (parent, { postInfo }, { db, currentUser }) => {
     const newPost = {
@@ -85,8 +98,9 @@ export default {
       throw new Error("There is No Post");
     }
     // Does not access: Duplicate good
-    if (!findPost.goodBy.find(userId => userId == currentUser._id)) return false;
-    const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, { good: findPost.good+1 });
+    if (!findPost.goodBy.find(user => user._id == currentUser._id)) return false;
+    findPost.goodBy.append( currentUser );
+    const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, { good: findPost.good+1, goodBy: findPost.goodBy });
     if (acknowledged) {
       findPost.goodBy.push(currentUser._id);
       pubsub.publish(`newScore${postId}`);
@@ -100,9 +114,9 @@ export default {
       throw new Error("There is No Post");
     }
     // Does not access: Duplicate Bad
-    if (!findPost.badBy.find(userId => userId == currentUser._id)) return false;
-
-    const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, { bad: find.bad+1 });
+    if (!findPost.badBy.find(user => user._id == currentUser._id)) return false;
+    findPost.badBy.append( currentUser );
+    const { acknowledged } = await db.collection('post').replaceOne({ _id: objectId }, { bad: find.bad+1, badBy: findPost.badBy });
     if (acknowledged) {
       findPost.badBy.push(currentUser._id);
       pubsub.publish(`newScore${postId}`);

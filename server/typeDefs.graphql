@@ -1,4 +1,6 @@
 scalar DateTime
+scalar Upload
+
 enum loginType {
   GITHUB
   NAVER
@@ -65,6 +67,7 @@ type Mutation {
   createPost(postInfo: PostInfo!): Post!
   updatePost(postId: ID!, postInfo: PostInfo!): String!
   deletePost(postId: ID!): String!
+  createPhoto(file: Upload!): File!
 
   createComment(postId: ID!, content: String!): Comment!
   deleteComment(commentId: ID!): Comment!
@@ -81,6 +84,11 @@ type Subscription {
 type AuthPayLoad {
   token: String!
   user: User!
+}
+type File {
+  filename: String!
+  mimetype: String!
+  encoding: String!
 }
 input UserAccess {
   login: String!
