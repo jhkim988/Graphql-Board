@@ -20,6 +20,7 @@ type User {
   badPost: [Post!]!
   created: DateTime!
   updated: DateTime!
+  token: String!
 }
 type Post {
   _id: ID!
@@ -28,8 +29,8 @@ type Post {
   photo: String
   good: Int!
   bad: Int!
-  viewNumber: Int!
   postedBy: User!
+  userId: String!
   totalComments: Int!
   comments: [Comment!]!
   goodBy: [User!]!
@@ -63,6 +64,8 @@ type Mutation {
   naverLogin(code: String!): AuthPayLoad!
   googleLogin(code: String!): AuthPayLoad!
 
+  createUser(userInfo: UserInfo!): User!
+  updateUser(userId: UserInfo!): String!
   deleteUser(userId: ID!): String!
 
   createPost(postInfo: PostInfo!): Post!
@@ -94,6 +97,13 @@ type File {
 input UserAccess {
   login: String!
   loginType: String!
+}
+input UserInfo {
+  login: String!
+  loginType: String!
+  name: String!
+  avatar: String
+  token: String!
 }
 input PostInfo {
   title: String!

@@ -4,13 +4,12 @@ import GraphQLUpload  from 'graphql-upload/GraphQLUpload.mjs';
 export default {
   User: {
     posted: async (parent, args, { db }) => {
-      return await db.colletion('post').find({ userId: parent._id }).toArray();
+      return await db.collection('post').find({ userId: parent._id }).toArray();
     },
     commented: async (parent, args, { db }) => {
       return await db.collection('comment').find({ userId: parent._id }).toArray();
     },
     goodPost: async (parent, args, { db }) => {
-      const findUser = await db.collection('user').findOne({ _id: parent._id });
       return await db.collection('post').find({ goodBy: parent._id }).toArray();
     },
     badPost: async (parent, args, { db }) => {
@@ -25,7 +24,7 @@ export default {
       return await db.collection('comment').findAll({ postId: parent._id }).estimatedDocumentCount();
     },
     comments: async (parent, args, { db }) => {
-      return await db.collection('comment').find({ postId: parent.id }).toArray();
+      return await db.collection('comment').find({ postId: parent._id }).toArray();
     }
   },
   Comment: {

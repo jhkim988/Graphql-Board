@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb"
+
 export default {
   totalUsers: async (parent, args, { db }) => {
     return await db.collection('user').estimatedDocumentCount()
@@ -16,9 +18,8 @@ export default {
     return await db.collection('post').find(p => p.created < cursor).sort({ created: -1 }).limit(limit).toArray();
   },
   post: async (parent, { postId }, { db }) => {
-    const lookPost = await db.collection('post').findOne({ _id: postId });
-    await db.collection('post').replaceOne({ _id: postId }, { viewNumber: lookPost.viewNumber+1 });
-    return await db.collection('post').findOne({ _id: postId });
+    const _id = new ObjectId(postId);
+    return await db.collection('post').findOne({ _id });
   },
   totalComments: async (parent, { postId }, { db }) => {
     return await db.collection('comment').find({ postId }).estimatedDocumentCount();

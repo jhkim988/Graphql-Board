@@ -39,9 +39,11 @@ const start = async() => {
     schema,
     csrfPrevention: true,
     context: async ({ req, connection }) => {
-      // token of http or websocket
+      // http or websocket
       const token = req ? req.headers.authorization: connection.context.Authorization;
-      const currentUser = await db.collection('user').findOne({ token }) // todo: Identify login type
+      const login = token && req.headers.login;
+      const loginType = token && req.headers.logintype;
+      const currentUser = await db.collection('user').findOne({ $and: [{token}, {login} , {loginType}] })
       return { db, currentUser, pubsub }
     },
     plugins: [

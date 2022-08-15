@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "db": "mongod --dbpath=\"./data/db\"",
-    "start": "nodemon -e js,json,graphql"
+    "start": "nodemon -e js,json,graphql",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [],
   "author": "",
@@ -26,5 +27,9 @@
     "mongodb": "^4.8.1",
     "node-fetch": "^3.2.10",
     "ws": "^8.8.1"
+  },
+  "devDependencies": {
+    "@apollo/client": "^3.6.9",
+    "jest": "^28.1.3"
   }
 }
