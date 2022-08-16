@@ -7,8 +7,16 @@ export default {
   allUsers: async (parent, args, { db }) => {
     return await db.collection('user').find().toArray()
   },
-  user: async (parent, { userId }, { db }) => {
-    return await db.collection('user').findOne({ _id: userId })
+  getUserById: async (parent, { userId }, { db }) => {
+    const objectId = new ObjectId(userId);
+    return await db.collection('user').findOne({ _id: objectId });
+  },
+  getUserByLoginInfo: async(parent, { userLoginInfo }, { db }) => {
+    return await db.collection('user').findOne({ $and: [
+      { login: userLoginInfo.login },
+      { loginType: userLoginInfo.loginType },
+      { token: userLoginInfo.token }
+    ]});
   },
   totalPosts: async (parent, args, { db }) => {
     return await db.collection('post').estimatedDocumentCount()

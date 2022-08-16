@@ -18,9 +18,7 @@ import cors from 'cors';
 import expressPlayground from 'graphql-playground-middleware-express';
 import dotenv from 'dotenv';
 import resolvers from './resolvers/index.js';
-
-// import { gql } from '@apollo/client';
-
+import { createUser, updateUser, deleteAllUser } from './testUnit/testUser.js'
 
 dotenv.config();
 
@@ -65,67 +63,14 @@ const server = new ApolloServer({
   ]
 });
 
-// describe('temp test', () => {
-//   beforeAll(async() => {
-
-//   });
-// })
-
 const makeUser = (login, loginType, name, avatar, token) => ({
   login, loginType, name, avatar, token
 })
 
-const userList = [0]
-  .map(x => makeUser(`login${x}`, `GITHUB`, `name${x}`, `avatar${x}`, `token${x}`));
+const userList = [0].map(x => makeUser(`login${x}`, `GITHUB`, `name${x}`, `avatar${x}`, `token${x}`));
+const userInfo = [100].map(x => makeUser(`login${x}`, `GITHUB`, `name${x}`, `avatar${x}`, `token${x}`));
 
-test('create user', async () => {
-  const result = await server.executeOperation({
-    query: `
-      mutation createUser($userInfo: UserInfo!) {
-        createUser(userInfo: $userInfo) {
-          login
-          loginType
-          name
-          avatar
-          token
-        }
-      }
-    `,
-    variables: {
-      userInfo: {
-        ...userList[0]
-      }
-    }
-  });
-  expect(result.errors).toBeUndefined();
-  for (let key in userList[0]) {
-    expect(result.data?.createUser[key]).toBe(userList[0][key]);
-  }
-});
 
-test('delete all user', async() => {
-  const getUsers = await server.executeOperation({
-    query: `
-      query allUsers {
-        allUsers {
-          _id
-        }
-      }
-    `
-  });
-  expect(getUsers.errors).toBeUndefined();
-  getUsers.data.allUsers.forEach(async ({ _id }) => {
-    const result = await server.executeOperation({
-      query: `
-        mutation deleteUser($userId: ID!) {
-          deleteUser(userId: $userId)
-        }
-      `,
-      variables: {
-        userId: _id
-      }
-    });
-    expect(result.errors).toBeUndefined();
-    expect(result.data.deleteUser).toBe('true');
-  });
-});
+test('create user', createUser(server, userList[0]));
+test('update user', updateUser(server, userList[0], userInfo[0]));
+test('delete all user', deleteAllUser(server));

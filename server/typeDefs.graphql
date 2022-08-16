@@ -49,7 +49,8 @@ type Comment {
 type Query {
   totalUsers: Int!
   allUsers: [User!]!
-  user(userId: ID!): User!
+  getUserById(userId: ID!): User!
+  getUserByLoginInfo(userLoginInfo: UserLoginInfo!): User!
   totalPosts: Int!
   allPosts(cursor: String, limit: Int=1): [Post!]!
   post(postId: ID!): Post!
@@ -65,7 +66,7 @@ type Mutation {
   googleLogin(code: String!): AuthPayLoad!
 
   createUser(userInfo: UserInfo!): User!
-  updateUser(userId: UserInfo!): String!
+  updateUser(userId: ID! userInfo: UserInfo!): String!
   deleteUser(userId: ID!): String!
 
   createPost(postInfo: PostInfo!): Post!
@@ -96,13 +97,18 @@ type File {
 }
 input UserAccess {
   login: String!
-  loginType: String!
+  loginType: loginType!
 }
 input UserInfo {
   login: String!
-  loginType: String!
+  loginType: loginType!
   name: String!
   avatar: String
+  token: String!
+}
+input UserLoginInfo {
+  login: String!
+  loginType: loginType!
   token: String!
 }
 input PostInfo {
