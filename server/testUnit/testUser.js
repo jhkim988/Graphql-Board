@@ -24,10 +24,10 @@ export const createUser = (server, user) => (async () => {
 });
 
 export const updateUser = (server, user, userInfo) => (async() => {
-  const getUserByLoginInfo = await server.executeOperation({
+  const userByLoginInfo = await server.executeOperation({
     query: `
-      query getUserByLoginInfo($userLoginInfo: UserLoginInfo!) {
-        getUserByLoginInfo(userLoginInfo: $userLoginInfo) {
+      query userByLoginInfo($userLoginInfo: UserLoginInfo!) {
+        userByLoginInfo(userLoginInfo: $userLoginInfo) {
           _id
         }
       }
@@ -40,7 +40,7 @@ export const updateUser = (server, user, userInfo) => (async() => {
       }
     }
   });
-  expect(getUserByLoginInfo.errors).toBeUndefined();
+  expect(userByLoginInfo.errors).toBeUndefined();
 
   const result = await server.executeOperation({
     query: `
@@ -49,7 +49,7 @@ export const updateUser = (server, user, userInfo) => (async() => {
       }
     `,
     variables: {
-      userId: getUserByLoginInfo.data.getUserByLoginInfo._id,
+      userId: userByLoginInfo.data.userByLoginInfo._id,
       userInfo: userInfo
     }
   });
@@ -57,8 +57,8 @@ export const updateUser = (server, user, userInfo) => (async() => {
 
   const validate = await server.executeOperation({
     query: `
-      query getUserById($userId: ID!) {
-        getUserById(userId: $userId) {
+      query userById($userId: ID!) {
+        userById(userId: $userId) {
           login
           loginType
           name
@@ -68,12 +68,12 @@ export const updateUser = (server, user, userInfo) => (async() => {
       }
     `,
     variables: {
-      userId: getUserByLoginInfo.data.getUserByLoginInfo._id
+      userId: userByLoginInfo.data.userByLoginInfo._id
     }
   });
   expect(validate.errors).toBeUndefined();
   for (let key in userInfo) {
-    expect(validate.data.getUserById[key]).toBe(userInfo[key]);
+    expect(validate.data.userById[key]).toBe(userInfo[key]);
   }
 });
 

@@ -18,7 +18,9 @@ import cors from 'cors';
 import expressPlayground from 'graphql-playground-middleware-express';
 import dotenv from 'dotenv';
 import resolvers from './resolvers/index.js';
+
 import { createUser, updateUser, deleteAllUser } from './testUnit/testUser.js'
+import { createPost, updatePost } from './testUnit/testPost.js';
 
 dotenv.config();
 
@@ -34,43 +36,30 @@ const client = await MongoClient.connect(DB_HOST, {useNewUrlParser: true});
 const db = client.db(DB_COLLECTION_NAME);
 const pubsub = new PubSub();
 
-// apollo server config:
+const makeUser = (login, loginType, name, avatar, token) => ({
+  login, loginType, name, avatar, token
+})
+const userList = [0].map(x => makeUser(`login${x}`, `GITHUB`, `name${x}`, `avatar${x}`, `token${x}`));
+const userInfo = [100].map(x => makeUser(`login${x}`, `GITHUB`, `name${x}`, `avatar${x}`, `token${x}`));
+
 const server = new ApolloServer({
   schema,
   csrfPrevention: true,
   context: async ({ req }) => {
     // http or websocket
-    const token = req && req.headers.authorization;
-    const login = token && req.headers.login;
-    const loginType = token && req.headers.logintype;
+    const token = userList[0].token;
+    const login = userList[0].login;
+    const loginType = userList[0].loginType;
     const currentUser = await db.collection('user').findOne({ $and: [{token}, {login} , {loginType}] })
     return { db, currentUser, pubsub }
-  },
-  plugins: [
-    // shutdown http server
-    ApolloServerPluginDrainHttpServer({ httpServer }),
-    {
-      // shutdown websocket server
-      async serverWillStart() {
-        return {
-          async drainServer() {
-            await serverCleanup.dispose();
-          }
-        }
-      }
-    },
-    ApolloServerPluginLandingPageLocalDefault({ embed: true })
-  ]
+  }
 });
-
-const makeUser = (login, loginType, name, avatar, token) => ({
-  login, loginType, name, avatar, token
-})
-
-const userList = [0].map(x => makeUser(`login${x}`, `GITHUB`, `name${x}`, `avatar${x}`, `token${x}`));
-const userInfo = [100].map(x => makeUser(`login${x}`, `GITHUB`, `name${x}`, `avatar${x}`, `token${x}`));
-
 
 test('create user', createUser(server, userList[0]));
 test('update user', updateUser(server, userList[0], userInfo[0]));
+
+test('create post', createPost(server, { title: 'testTitle', content: 'testContent', photo: 'testPhoto' }));
+test('update post', updatePost(server, { title: 'updateTitle', content: 'updateContent', photo: 'updatePhoto' }));
+
+// test('delete all post')
 test('delete all user', deleteAllUser(server));

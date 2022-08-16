@@ -49,8 +49,8 @@ type Comment {
 type Query {
   totalUsers: Int!
   allUsers: [User!]!
-  getUserById(userId: ID!): User!
-  getUserByLoginInfo(userLoginInfo: UserLoginInfo!): User!
+  userById(userId: ID!): User!
+  userByLoginInfo(userLoginInfo: UserLoginInfo!): User!
   totalPosts: Int!
   allPosts(cursor: String, limit: Int=1): [Post!]!
   post(postId: ID!): Post!
