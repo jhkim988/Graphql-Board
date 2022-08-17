@@ -49,7 +49,7 @@ export default {
     return await db.collection('comment').find({ postId }).toArray();
   },
   comment: async (parent, { commentId }, { db }) => {
-    const findComment = await db.collection('comemnt').findOne({ _id: commentId });
+    const findComment = await db.collection('comment').findOne({ _id: new ObjectId(commentId) });
     if (!findComment) {
       throw NoComment;
     }

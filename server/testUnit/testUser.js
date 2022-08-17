@@ -4,6 +4,12 @@ export const me = async (server) => {
       query me {
         me {
           _id
+          goodPost {
+            _id
+          }
+          badPost {
+            _id
+          }
           posted {
             _id
           }
@@ -111,6 +117,9 @@ export const updateUserTest = (server, user, userInfo) => async() => {
   expect(userByIdExe.errors).toBeUndefined();
   for (let key in userInfo) {
     expect(userByIdExe.data.userById[key]).toBe(userInfo[key]);
+  }
+  for (let key in user) {
+    user[key] = userInfo[key];
   }
 }
 

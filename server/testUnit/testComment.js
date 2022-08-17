@@ -14,6 +14,8 @@ export const createComment = async (server, postId, content) => {
           commentedBy {
             _id
           }
+          userId
+          postId
         }
       }
     `,
@@ -24,7 +26,7 @@ export const createComment = async (server, postId, content) => {
 export const deleteComment = async (server, commentId) => {
   const deleteComment = await server.executeOperation({
     query: `
-      muataion deleteComment($commentId: ID!) {
+      mutation deleteComment($commentId: ID!) {
         deleteComment(commentId: $commentId)
       }
     `,
@@ -41,6 +43,9 @@ export const queryComment = async (server, commentId) => {
           commentedOn {
             _id
           }
+          commentedBy {
+            _id
+          }
         }
       }
     `,
@@ -50,11 +55,11 @@ export const queryComment = async (server, commentId) => {
 }
 
 export const createCommentTest = (server, user) => async () => {
-  const userByLoginInfoExe = await userByLoginInfo(server, user);
-  expect(userByLoginInfoExe.errors).toBeUndefined();
-  expect(userByLoginInfoExe.data.userByLoginInfo._id).not.toBeUndefined();
-  const user_id = userByLoginInfoExe.data.userByLoginInfo._id;
-
+  const meBefore = await me(server);
+  expect(meBefore.errors).toBeUndefined();
+  expect(meBefore.data.me._id).not.toBeUndefined();
+  const user_id = meBefore.data.me._id;
+  
   const createPostExe = await createPost(server, { title: 'title', content: 'content', photo: 'photo'});
   expect(createPostExe.errors).toBeUndefined();
   expect(createPostExe.data.createPost._id).not.toBeUndefined();
@@ -69,22 +74,29 @@ export const createCommentTest = (server, user) => async () => {
 
   const meAfter = await me(server);
   expect(meAfter.errors).toBeUndefined();
-  expect(meAfter.data.me.data.comments.length).toBe(me.meBefore.me.data.comments.length+1);
+  expect(meAfter.data.me.commented.length).toBe(meBefore.data.me.commented.length+1);
 
   const postAfter = await queryPost(server, post_id);
   expect(postAfter.errors).toBeUndefined();
-  expect(createPostExe.data.createPost.comments.length).toBe(postAfter.data.queryPost.comments.length+1);
+  expect(createPostExe.data.createPost.comments.length+1).toBe(postAfter.data.post.comments.length);
+
+  const commentId = createCommentExe.data.createComment._id;
+  const queryCommentAfter = await queryComment(server, commentId);
+  expect(queryCommentAfter.errors).toBeUndefined();
+  expect(queryCommentAfter.data.comment.commentedBy._id).toBe(meAfter.data.me._id);
+  expect(queryCommentAfter.data.comment.commentedOn._id).toBe(post_id);
 }
 
 export const deleteCommentTest = (server) => async () => {
   const meBefore = await me(server);
   expect(meBefore.errors).toBeUndefined();
+  expect(meBefore.data.me.commented[0]._id).not.toBeUndefined();
 
   const commentId = meBefore.data.me.commented[0]._id;
   const queryCommentBefore = await queryComment(server, commentId);
   expect(queryCommentBefore.errors).toBeUndefined();
 
-  const postId = queryCommentBefore.data.queryComment.commentedOn._id;
+  const postId = queryCommentBefore.data.comment.commentedOn._id;
   const postBefore = await queryPost(server, postId);
   expect(postBefore.errors).toBeUndefined();
   
@@ -97,6 +109,6 @@ export const deleteCommentTest = (server) => async () => {
   const postAfter = await queryPost(server, postId);
   expect(postAfter.errors).toBeUndefined();
 
-  expect(meAfter.data.me.comments.length+1).toBe(meBefore.data.me.comments.length);
-  expect(postAfter.data.queryPost.comments.length+1).toBe(postBefore.data.me.comments.length);
+  expect(meAfter.data.me.commented.length+1).toBe(meBefore.data.me.commented.length);
+  expect(postAfter.data.post.comments.length+1).toBe(postBefore.data.post.comments.length);
 }

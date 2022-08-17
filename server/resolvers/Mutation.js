@@ -2,7 +2,7 @@ import githubLogin from '../oauth/githubLogin.js';
 import naverLogin from '../oauth/naverLogin.js';
 import googleLogin from '../oauth/googleLogin.js';
 import { ObjectId } from 'mongodb'
-import { NoUser, NoPost, NoComment, AccessDenied } from './errorMessage.js';
+import { NoUser, NoPost, NoComment, AccessDenied, DuplicateGood, DuplicateBad } from './errorMessage.js';
 
 const fileNameGenerator = (fileName) => {
   const [ name, ext ] = fileName.spli('.');
@@ -25,7 +25,7 @@ export default {
     if (!findUser) {
       throw NoUser;
     }
-    if (userId != currentUser._id.toString() && !(process.env.NODE_ENV == 'test' && currentUser._id == 'testId' )) {
+    if (userId != currentUser._id.toString()) {
       throw AccessDenied;
     }
     const { acknowledged } = await db.collection('user').updateOne({ _id: objectId }, { $set: { ...userInfo }});
@@ -37,7 +37,7 @@ export default {
     if (!findUser) {
       throw NoUser;
     }
-    if (userId != currentUser._id.toString() && !( process.env.NODE_ENV == 'test' && currentUser._id == 'testId' )) {
+    if (userId != currentUser._id.toString()) {
       throw AccessDenied;
     }
     // delete all post and comment: Follow Service Policy
@@ -79,7 +79,7 @@ export default {
       userId: currentUser._id
     }
     await db.collection('post').insertOne(newPost);
-    return {...newPost };
+    return newPost;
   },
   updatePost: async (parent, { postId, postInfo }, { db, currentUser }) => {
     const objectId = new ObjectId(postId);
@@ -114,7 +114,7 @@ export default {
       throw AccessDenied;
     }
     const objectId = new ObjectId(postId);
-    const newComment = { content, userId: currentUser._id, postId };
+    const newComment = { content, userId: currentUser._id, postId: objectId };
     await db.collection('comment').insertOne(newComment);
     pubsub.publish(`newComment${postId}`)
     
@@ -126,13 +126,13 @@ export default {
     
     return newComment;
   },
-  deleteComment: async (parent, { commentId }, { db }) => {
+  deleteComment: async (parent, { commentId }, { db, currentUser }) => {
     const objectId = new ObjectId(commentId);
     const findComment = await db.collection('comment').findOne({ _id: objectId });
     if (!findComment) {
       throw NoComment;
     }
-    if (!findComment.commentedBy._id.equals(currentUser._id)) {
+    if (!findComment.userId == currentUser._id.toString()) {
       throw AccessDenied;
     }
     const { acknowledged } = await db.collection('comment').deleteOne({ _id: objectId });
@@ -145,7 +145,9 @@ export default {
       throw NoPost;
     }
     // Does not access: Duplicate good
-    if (findPost.goodBy.find(user => user._id.equals(currentUser._id))) return false;
+    if (findPost.goodBy.find(user => user._id.equals(currentUser._id))) {
+      throw DuplicateGood;  
+    }
     const { acknowledged } = await db.collection('post').updateOne({ _id: objectId }, { $inc: { good: 1 }});
     if (acknowledged) {
       await db.collection('post').updateOne({ _id: objectId }, { $push: { goodBy: currentUser }});
@@ -160,7 +162,9 @@ export default {
       throw erroeMessage.NoPost;
     }
     // Does not access: Duplicate Bad
-    if (findPost.badBy.find(user => user._id.equals(currentUser._id))) return false;
+    if (findPost.badBy.find(user => user._id.equals(currentUser._id))) {
+      throw DuplicateBad;
+    }
     const { acknowledged } = await db.collection('post').updateOne({ _id: objectId }, { $inc: { bad: 1 }});
     if (acknowledged) {
       await db.collection('post').updateOne({ _id: objectId }, { $push: { badBy: currentUser }});

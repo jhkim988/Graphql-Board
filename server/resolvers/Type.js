@@ -12,10 +12,10 @@ export default {
       return await db.collection('comment').find({ userId: parent._id }).toArray();
     },
     goodPost: async (parent, args, { db }) => {
-      return await db.collection('post').find({ goodBy: parent._id }).toArray();
+      return await db.collection('post').find({ goodBy: { $elemMatch: { _id: parent._id }}}).toArray();
     },
     badPost: async (parent, args, { db }) => {
-      return await db.collection('post').find({ badBy: parent._id}).toArray();
+      return await db.collection('post').find({ badBy: { $elemMatch: { _id: parent._id }}}).toArray();
     }
   },
   Post: {
@@ -23,7 +23,7 @@ export default {
       return await db.collection('user').findOne({ _id: parent.userId });
     },
     totalComments: async (parent, args, { db }) => {
-      return await db.collection('comment').findAll({ postId: parent._id }).estimatedDocumentCount();
+      return await db.collection('comment').find({ postId: parent._id }).estimatedDocumentCount();
     },
     comments: async (parent, args, { db }) => {
       return await db.collection('comment').find({ postId: parent._id }).toArray();

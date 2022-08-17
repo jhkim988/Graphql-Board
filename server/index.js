@@ -43,7 +43,7 @@ const start = async() => {
       const token = req ? req.headers.authorization: connection.context.Authorization;
       const login = token && req.headers.login;
       const loginType = token && req.headers.logintype;
-      const currentUser = await db.collection('user').findOne({ $and: [{token}, {login} , {loginType}] })
+      const currentUser = await db.collection('user').findOne({ $and: [{token}, {login}, {loginType}] })
       return { db, currentUser, pubsub }
     },
     plugins: [

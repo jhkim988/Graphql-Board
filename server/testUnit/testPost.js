@@ -9,6 +9,18 @@ export const createPost = async (server, postInfo) => {
           title
           content
           photo
+          good
+          bad
+          goodBy {
+            _id
+          }
+          badBy {
+            _id
+          }
+          comments {
+            _id
+          }
+          userId
         }
       }
     `,
@@ -35,6 +47,17 @@ export const queryPost = async (server, postId) => {
           title
           content
           photo
+          good
+          bad
+          goodBy {
+            _id
+          }
+          badBy {
+            _id
+          }
+          comments {
+            _id
+          }
         }
       }
     `,
@@ -53,8 +76,35 @@ export const deletePost = async (server, postId) => {
   });
   return deletePost
 }
+export const totalPosts = async (server) => {
+  const totalPosts = await server.executeOperation({
+    query: `
+      query totalPosts {
+        totalPosts
+      }
+    `
+  });
+  return totalPosts;
+}
+export const allPosts = async (server) => {
+  const allPosts = await server.executeOperation({
+    query: `
+      query allPosts {
+        allPosts {
+          _id
+        }
+      }
+    `
+  });
+  return allPosts;
+}
 
 export const createPostTest = (server, postInfo) => async () => {
+  const totalPostsBefore = await totalPosts(server);
+  expect(totalPostsBefore.errors).toBeUndefined();
+  const allPostsBefore = await allPosts(server);
+  expect(allPostsBefore.errors).toBeUndefined();
+
   const createPostExe = await createPost(server, postInfo);
   expect(createPostExe.errors).toBeUndefined();
   let post_id = createPostExe.data.createPost._id;
@@ -66,6 +116,15 @@ export const createPostTest = (server, postInfo) => async () => {
   const currentUser = await me(server);
   expect(currentUser.errors).toBeUndefined();
   expect(currentUser.data.me.posted.find(x => x._id == post_id)).toBeTruthy();
+
+  const totalPostsAfter = await totalPosts(server);
+  expect(totalPostsAfter.errors).toBeUndefined();
+
+  const allPostsAfter = await allPosts(server);
+  expect(allPostsAfter.errors).toBeUndefined();
+
+  expect(totalPostsBefore.data.totalPosts+1).toBe(totalPostsAfter.data.totalPosts);
+  expect(allPostsBefore.data.allPosts.length+1).toBe(allPostsAfter.data.allPosts.length);
 }
 export const updatePostTest = (server, postInfo) => async () => {
   const currentUser = await me(server);
@@ -83,7 +142,12 @@ export const updatePostTest = (server, postInfo) => async () => {
   }
 }
 
-export const deletePostTest = (server, postInfo) => async () => {
+export const deletePostTest = (server) => async () => {
+  const totalPostsBefore = await totalPosts(server);
+  expect(totalPostsBefore.errors).toBeUndefined();
+  const allPostsBefore = await allPosts(server);
+  expect(allPostsBefore.errors).toBeUndefined();
+
   const currentUserBefore = await me(server);
   expect(currentUserBefore.errors).toBeUndefined();
   const post_id = currentUserBefore.data.me.posted[0]._id
@@ -98,4 +162,13 @@ export const deletePostTest = (server, postInfo) => async () => {
   const currentUserAfter = await me(server);
   expect(currentUserAfter.error).toBeUndefined();
   expect(currentUserAfter.data.me.posted.length+1).toBe(currentUserBefore.data.me.posted.length);
+
+  const totalPostsAfter = await totalPosts(server);
+  expect(totalPostsAfter.errors).toBeUndefined();
+
+  const allPostsAfter = await allPosts(server);
+  expect(allPostsAfter.errors).toBeUndefined();
+
+  expect(totalPostsBefore.data.totalPosts).toBe(totalPostsAfter.data.totalPosts+1);
+  expect(allPostsBefore.data.allPosts.length).toBe(allPostsAfter.data.allPosts.length+1);
 }
