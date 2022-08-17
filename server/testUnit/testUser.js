@@ -1,5 +1,23 @@
-export const createUser = (server, user) => (async () => {
-  const result = await server.executeOperation({
+export const me = async (server) => {
+  const me = await server.executeOperation({
+    query: `
+      query me {
+        me {
+          _id
+          posted {
+            _id
+          }
+          commented {
+            _id
+          }
+        }
+      }
+    `
+  });
+  return me;
+}
+export const createUser = async (server, user) => {
+  const createUser = await server.executeOperation({
     query: `
       mutation createUser($userInfo: UserInfo!) {
         createUser(userInfo: $userInfo) {
@@ -11,19 +29,11 @@ export const createUser = (server, user) => (async () => {
         }
       }
     `,
-    variables: {
-      userInfo: {
-        ...user
-      }
-    }
+    variables: { userInfo: user }
   });
-  expect(result.errors).toBeUndefined();
-  for (let key in user) {
-    expect(result.data?.createUser[key]).toBe(user[key]);
-  }
-});
-
-export const updateUser = (server, user, userInfo) => (async() => {
+  return createUser;
+}
+export const userByLoginInfo = async (server, user) => {
   const userByLoginInfo = await server.executeOperation({
     query: `
       query userByLoginInfo($userLoginInfo: UserLoginInfo!) {
@@ -37,25 +47,12 @@ export const updateUser = (server, user, userInfo) => (async() => {
         login: user.login,
         loginType: user.loginType,
         token: user.token,
-      }
-    }
+    }}
   });
-  expect(userByLoginInfo.errors).toBeUndefined();
-
-  const result = await server.executeOperation({
-    query: `
-      mutation updateUser($userId: ID!, $userInfo: UserInfo!) {
-        updateUser(userId: $userId, userInfo: $userInfo)
-      }
-    `,
-    variables: {
-      userId: userByLoginInfo.data.userByLoginInfo._id,
-      userInfo: userInfo
-    }
-  });
-  expect(result.errors).toBeUndefined();
-
-  const validate = await server.executeOperation({
+  return userByLoginInfo;
+}
+export const userById = async (server, userId) => {
+  const userById = await server.executeOperation({
     query: `
       query userById($userId: ID!) {
         userById(userId: $userId) {
@@ -67,39 +64,65 @@ export const updateUser = (server, user, userInfo) => (async() => {
         }
       }
     `,
-    variables: {
-      userId: userByLoginInfo.data.userByLoginInfo._id
-    }
+    variables: { userId }
   });
-  expect(validate.errors).toBeUndefined();
-  for (let key in userInfo) {
-    expect(validate.data.userById[key]).toBe(userInfo[key]);
-  }
-});
-
-export const deleteAllUser = (server) => (async() => {
-  const getAllUsers = await server.executeOperation({
+  return userById;
+}
+export const updateUser = async (server, userId, userInfo) => {
+  const updateUser = await server.executeOperation({
     query: `
-      query allUsers {
-        allUsers {
-          _id
-        }
+      mutation updateUser($userId: ID!, $userInfo: UserInfo!) {
+        updateUser(userId: $userId, userInfo: $userInfo)
       }
-    `
+    `,
+    variables: { userId, userInfo }
   });
-  expect(getAllUsers.errors).toBeUndefined();
-  getAllUsers.data.allUsers.forEach(async ({ _id }) => {
-    const result = await server.executeOperation({
-      query: `
-        mutation deleteUser($userId: ID!) {
-          deleteUser(userId: $userId)
-        }
-      `,
-      variables: {
-        userId: _id
+  return updateUser;
+}
+export const deleteUser = async (server, userId) => {
+  const deleteUser = await server.executeOperation({
+    query: `
+      mutation deleteUser($userId: ID!) {
+        deleteUser(userId: $userId)
       }
-    });
-    expect(result.errors).toBeUndefined();
-    expect(result.data.deleteUser).toBe('true');
+    `,
+    variables: { userId }
   });
-});
+  return deleteUser;
+}
+export const createUserTest = (server, user) => async () => {
+  const createUserExe = await createUser(server, user);
+  expect(createUserExe.errors).toBeUndefined();
+  for (let key in user) {
+    expect(createUserExe.data?.createUser[key]).toBe(user[key]);
+  }
+}
+export const updateUserTest = (server, user, userInfo) => async() => {
+  const userByLoginInfoExe = await userByLoginInfo(server, user);
+  expect(userByLoginInfoExe.errors).toBeUndefined();
+
+  const user_id = userByLoginInfoExe.data.userByLoginInfo._id;
+  const updateUserExe = await updateUser(server, user_id, userInfo);
+  expect(updateUserExe.errors).toBeUndefined();
+  expect(updateUserExe.data.updateUser).toBe('true');
+
+  const userId = userByLoginInfoExe.data.userByLoginInfo._id;
+  const userByIdExe = await userById(server, userId);
+  expect(userByIdExe.errors).toBeUndefined();
+  for (let key in userInfo) {
+    expect(userByIdExe.data.userById[key]).toBe(userInfo[key]);
+  }
+}
+
+export const deleteUserTest = (server, user) => async() => {
+  const userByLoginInfoExe = await userByLoginInfo(server, user);
+  expect(userByLoginInfoExe.errors).toBeUndefined();
+  const user_id = userByLoginInfoExe.data.userByLoginInfo._id;
+
+  const deleteUserExe = await deleteUser(server, user_id);
+  expect(deleteUserExe.errors).toBeUndefined();
+  expect(deleteUserExe.data.deleteUser).toBe('true');
+
+  const userByIdExe = await userById(server, user_id);
+  expect(userByIdExe.errors).not.toBeUndefined();
+}

@@ -41,7 +41,9 @@ type Post {
 type Comment {
   _id: ID!
   content: String!
-  of: Post!
+  postId: String!
+  userId: String!
+  commentedOn: Post!
   commentedBy: User!
   created: DateTime!
 }
@@ -75,7 +77,7 @@ type Mutation {
   createPhoto(file: Upload!): File!
 
   createComment(postId: ID!, content: String!): Comment!
-  deleteComment(commentId: ID!): Comment!
+  deleteComment(commentId: ID!): String!
 
   addGood(postId: ID!): String!
   addBad(postId: ID!): String!

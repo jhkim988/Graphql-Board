@@ -1,7 +1,8 @@
-import githubLogin from '../auth/githubLogin.js';
-import naverLogin from '../auth/naverLogin.js';
-import googleLogin from '../auth/googleLogin.js';
+import githubLogin from '../oauth/githubLogin.js';
+import naverLogin from '../oauth/naverLogin.js';
+import googleLogin from '../oauth/googleLogin.js';
 import { ObjectId } from 'mongodb'
+import { NoUser, NoPost, NoComment, AccessDenied } from './errorMessage.js';
 
 const fileNameGenerator = (fileName) => {
   const [ name, ext ] = fileName.spli('.');
@@ -18,17 +19,27 @@ export default {
     await db.collection('user').insertOne( newUser );
     return newUser;
   },
-  updateUser: async (parent, { userId, userInfo }, { db }) => {
+  updateUser: async (parent, { userId, userInfo }, { db, currentUser }) => {
     const objectId = new ObjectId(userId);
     const findUser = await db.collection('user').findOne({ _id: objectId });
     if (!findUser) {
-      throw new Error('There is No User');
+      throw NoUser;
+    }
+    if (userId != currentUser._id.toString() && !(process.env.NODE_ENV == 'test' && currentUser._id == 'testId' )) {
+      throw AccessDenied;
     }
     const { acknowledged } = await db.collection('user').updateOne({ _id: objectId }, { $set: { ...userInfo }});
     return acknowledged;
   },
-  deleteUser: async (parent, { userId }, { db }) => {
+  deleteUser: async (parent, { userId }, { db, currentUser }) => {
     const objectId = new ObjectId(userId);
+    const findUser = await db.collection('user').findOne({ _id: objectId });
+    if (!findUser) {
+      throw NoUser;
+    }
+    if (userId != currentUser._id.toString() && !( process.env.NODE_ENV == 'test' && currentUser._id == 'testId' )) {
+      throw AccessDenied;
+    }
     // delete all post and comment: Follow Service Policy
     await db.collection('comment').deleteMany({ userId: objectId });
     const postIdList = await db.collection('post').find({ userId: objectId }).toArray();
@@ -39,7 +50,10 @@ export default {
     const { acknowledged } = await db.collection('user').deleteOne({ _id: objectId });
     return acknowledged
   },
-  createPhoto: async (parent, { file }) => {
+  createPhoto: async (parent, { file }, { currentUser }) => {
+    if (!currentUser) {
+      throw AccessDenied;
+    }
     const { createReadStream, filename, mimetype, encoding } = await file;
     const saveName = fileNameGenerator(filename);
     const toPath = path.join(path.resolve(), 'assets', 'photos', saveName);
@@ -49,8 +63,8 @@ export default {
     return { filename: toPath, mimetype, encoding }
   },
   createPost: async (parent, { postInfo }, { db, currentUser }) => {
-    if (!currentUser?._id) {
-      throw new Error(`Access Denied.`);
+    if (!currentUser) {
+      throw AccessDenied;
     }
     const newPost = {
       ...postInfo,
@@ -71,10 +85,10 @@ export default {
     const objectId = new ObjectId(postId);
     const findPost = await db.collection('post').findOne({ _id: objectId });
     if (!findPost) {
-      throw new Error("There is No Post.");
+      throw NoPost;
     }
-    if (!findPost.userId.equals(currentUser._id)) {
-      throw new Error(`Access Denied.`);
+    if (findPost.userId != currentUser._id.toString()) {
+      throw AccessDenied;
     }
     const { acknowledged } = await db.collection('post').updateOne({ _id: objectId }, { $set: { ...postInfo, updated: new Date() }});
     return acknowledged;
@@ -83,10 +97,10 @@ export default {
     const objectId = new ObjectId(postId);
     const findPost = await db.collection('post').findOne({ _id: objectId });
     if (!findPost) {
-      throw Error("There is No Post.");
+      throw NoPost;
     }
-    if (!findPost.userId.equals(currentUser._id)) {
-      throw new Error(`Access Denied.`);
+    if (findPost.userId != currentUser._id.toString()) {
+      throw AccessDenied;
     }
     // delete all inner comments:
     await db.collection('comment').deleteMany({ postId });
@@ -97,16 +111,16 @@ export default {
   },
   createComment: async (parent, { postId, content }, { db, currentUser, pubsub }) => {
     if (!currentUser) {
-      throw new Error(`Access Denied.`);
+      throw AccessDenied;
     }
     const objectId = new ObjectId(postId);
-    const newComment = { content, userId: currentUser._id, postId: objectId };
+    const newComment = { content, userId: currentUser._id, postId };
     await db.collection('comment').insertOne(newComment);
     pubsub.publish(`newComment${postId}`)
     
     // commentsAlarm
-    const post = await db.collection('post').find({ _id: postId });
-    if (post._userId == currentUser._id) { // Does not alert to post writer.
+    const post = await db.collection('post').find({ _id: objectId });
+    if (post._userId == currentUser._id.toString()) { // Does not alert to post writer.
       pubsub(currentUser._id.toString());
     }
     
@@ -116,10 +130,10 @@ export default {
     const objectId = new ObjectId(commentId);
     const findComment = await db.collection('comment').findOne({ _id: objectId });
     if (!findComment) {
-      throw new Error("There is No Comment");
+      throw NoComment;
     }
     if (!findComment.commentedBy._id.equals(currentUser._id)) {
-      throw new Error(`Access Denied.`);
+      throw AccessDenied;
     }
     const { acknowledged } = await db.collection('comment').deleteOne({ _id: objectId });
     return acknowledged;
@@ -128,7 +142,7 @@ export default {
     const objectId = new ObjectId(postId);
     const findPost = await db.collection('post').findOne({ _id: objectId });
     if (!findPost) {
-      throw new Error("There is No Post");
+      throw NoPost;
     }
     // Does not access: Duplicate good
     if (findPost.goodBy.find(user => user._id.equals(currentUser._id))) return false;
@@ -143,7 +157,7 @@ export default {
     const objectId = new ObjectId(postId);
     const findPost = await db.collection('post').findOne({ _id: objectId });
     if (!findPost) {
-      throw new Error("There is No Post");
+      throw erroeMessage.NoPost;
     }
     // Does not access: Duplicate Bad
     if (findPost.badBy.find(user => user._id.equals(currentUser._id))) return false;

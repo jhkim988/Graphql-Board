@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb"
+import { NoUser, NoPost, NoComment } from './errorMessage.js';
 
 export default {
   totalUsers: async (parent, args, { db }) => {
@@ -9,14 +10,22 @@ export default {
   },
   userById: async (parent, { userId }, { db }) => {
     const objectId = new ObjectId(userId);
-    return await db.collection('user').findOne({ _id: objectId });
+    const findUser = await db.collection('user').findOne({ _id: objectId });
+    if (!findUser) {
+      throw NoUser;
+    }
+    return findUser;
   },
   userByLoginInfo: async(parent, { userLoginInfo }, { db }) => {
-    return await db.collection('user').findOne({ $and: [
+    const findUser = await db.collection('user').findOne({ $and: [
       { login: userLoginInfo.login },
       { loginType: userLoginInfo.loginType },
       { token: userLoginInfo.token }
     ]});
+    if (!findUser) {
+      throw NoUser;
+    }
+    return findUser;
   },
   totalPosts: async (parent, args, { db }) => {
     return await db.collection('post').estimatedDocumentCount()
@@ -27,7 +36,11 @@ export default {
   },
   post: async (parent, { postId }, { db }) => {
     const _id = new ObjectId(postId);
-    return await db.collection('post').findOne({ _id });
+    const findPost = await db.collection('post').findOne({ _id });
+    if (!findPost) {
+      throw NoPost;
+    }
+    return findPost
   },
   totalComments: async (parent, { postId }, { db }) => {
     return await db.collection('comment').find({ postId }).estimatedDocumentCount();
@@ -36,9 +49,16 @@ export default {
     return await db.collection('comment').find({ postId }).toArray();
   },
   comment: async (parent, { commentId }, { db }) => {
-    return await db.collection('comemnt').findOne({ _id: commentId });
+    const findComment = await db.collection('comemnt').findOne({ _id: commentId });
+    if (!findComment) {
+      throw NoComment;
+    }
+    return findComment;
   },
   me: async (parent, args, { currentUser }) => {
+    if (!currentUser) {
+      throw NotLoggedIn
+    }
     return currentUser;
   }
 }

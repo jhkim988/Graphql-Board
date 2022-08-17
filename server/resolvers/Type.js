@@ -1,5 +1,7 @@
 import { GraphQLScalarType } from 'graphql';
 import GraphQLUpload  from 'graphql-upload/GraphQLUpload.mjs';
+import { ObjectId } from 'mongodb';
+import { NoPost, NoUser } from './errorMessage.js';
 
 export default {
   User: {
@@ -28,11 +30,21 @@ export default {
     }
   },
   Comment: {
-    of: async (parent, args, { db }) => {
-      return await db.collection('post').findOne({ _id: postId });
+    commentedOn: async (parent, args, { db }) => {
+      const _id = new ObjectId(parent.postId);
+      const findPost = await db.collection('post').findOne({ _id });
+      if (!findPost) {
+        throw NoPost;
+      }
+      return findPost;
     },
     commentedBy: async (parent, args, { db }) => {
-      return await db.collection('user').findOne({ _id: userId });
+      const _id = new ObjectId(parent.userId);
+      const findUser = await db.collection('user').findOne({ _id });
+      if (!findUser) {
+        throw NoUser;
+      }
+      return findUser;
     }
   },
   DateTime: new GraphQLScalarType({
