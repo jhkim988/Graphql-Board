@@ -1,4 +1,4 @@
-import { me, userByLoginInfo } from './testUser.js';
+import { me } from './testUser.js';
 import { createPost, queryPost } from './testPost.js';
 
 export const createComment = async (server, postId, content) => {
@@ -53,8 +53,31 @@ export const queryComment = async (server, commentId) => {
   });
   return queryComment;
 }
-
-export const createCommentTest = (server, user) => async () => {
+export const totalComments = async (server, postId) => {
+  const totalComments = await server.executeOperation({
+    query: `
+      query totalComments($postId: ID!) {
+        totalComments(postId: $postId)
+      }
+    `,
+    variables: { postId }
+  });
+  return totalComments;
+}
+export const allComments = async (server, postId) => {
+  const allComments = await server.executeOperation({
+    query: `
+      query allComments($postId: ID!) {
+        allComments(postId: $postId) {
+          _id
+        }
+      }
+    `,
+    variables: { postId }
+  });
+  return allComments;
+}
+export const createCommentTest = (server) => async () => {
   const meBefore = await me(server);
   expect(meBefore.errors).toBeUndefined();
   expect(meBefore.data.me._id).not.toBeUndefined();
@@ -64,6 +87,11 @@ export const createCommentTest = (server, user) => async () => {
   expect(createPostExe.errors).toBeUndefined();
   expect(createPostExe.data.createPost._id).not.toBeUndefined();
   const post_id = createPostExe.data.createPost._id;
+
+  const totalCommentsBefore = await totalComments(server, post_id);
+  expect(totalCommentsBefore.errors).toBeUndefined();
+  const allCommentsBefore = await allComments(server, post_id);
+  expect(allCommentsBefore.errors).toBeUndefined();
 
   const commentText = 'comment text';
   const createCommentExe = await createComment(server, post_id, commentText);
@@ -85,6 +113,14 @@ export const createCommentTest = (server, user) => async () => {
   expect(queryCommentAfter.errors).toBeUndefined();
   expect(queryCommentAfter.data.comment.commentedBy._id).toBe(meAfter.data.me._id);
   expect(queryCommentAfter.data.comment.commentedOn._id).toBe(post_id);
+
+  const totalCommentsAfter = await totalComments(server, post_id);
+  expect(totalCommentsAfter.errors).toBeUndefined();
+  const allCommentsAfter = await allComments(server, post_id);
+  expect(allCommentsAfter.errors).toBeUndefined();
+
+  expect(totalCommentsBefore.data.totalComments+1).toBe(totalCommentsAfter.data.totalComments);
+  expect(allCommentsBefore.data.allComments.length+1).toBe(allCommentsAfter.data.allComments.length);
 }
 
 export const deleteCommentTest = (server) => async () => {
@@ -97,6 +133,12 @@ export const deleteCommentTest = (server) => async () => {
   expect(queryCommentBefore.errors).toBeUndefined();
 
   const postId = queryCommentBefore.data.comment.commentedOn._id;
+
+  const totalCommentsBefore = await totalComments(server, postId);
+  expect(totalCommentsBefore.errors).toBeUndefined();
+  const allCommentsBefore = await allComments(server, postId);
+  expect(allCommentsBefore.errors).toBeUndefined();
+
   const postBefore = await queryPost(server, postId);
   expect(postBefore.errors).toBeUndefined();
   
@@ -111,4 +153,12 @@ export const deleteCommentTest = (server) => async () => {
 
   expect(meAfter.data.me.commented.length+1).toBe(meBefore.data.me.commented.length);
   expect(postAfter.data.post.comments.length+1).toBe(postBefore.data.post.comments.length);
+
+  const totalCommentsAfter = await totalComments(server, postId);
+  expect(totalCommentsAfter.errors).toBeUndefined();
+  const allCommentsAfter = await allComments(server, postId);
+  expect(allCommentsAfter.errors).toBeUndefined();
+
+  expect(totalCommentsBefore.data.totalComments).toBe(totalCommentsAfter.data.totalComments+1);
+  expect(allCommentsBefore.data.allComments.length).toBe(allCommentsAfter.data.allComments.length+1);
 }

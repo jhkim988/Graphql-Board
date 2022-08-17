@@ -50,7 +50,7 @@ test('create post', createPostTest(server, { title: 'testTitle', content: 'testC
 test('update post', updatePostTest(server, { title: 'updateTitle', content: 'updateContent', photo: 'updatePhoto' }));
 test('delete post', deletePostTest(server));
 
-test('create comment', createCommentTest(server, userList[0]));
+test('create comment', createCommentTest(server));
 test('delete comment', deleteCommentTest(server));
 
 test('good', addGoodTest(server));

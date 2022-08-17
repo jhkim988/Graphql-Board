@@ -28,7 +28,7 @@ export default {
     return findUser;
   },
   totalPosts: async (parent, args, { db }) => {
-    return await db.collection('post').estimatedDocumentCount()
+    return await db.collection('post').estimatedDocumentCount();
   },
   allPosts: async (parent, {cursor, limit}, { db }) => {
     if (!cursor) return await db.collection('post').find().toArray();
@@ -43,10 +43,10 @@ export default {
     return findPost
   },
   totalComments: async (parent, { postId }, { db }) => {
-    return await db.collection('comment').find({ postId }).estimatedDocumentCount();
+    return await db.collection('comment').find({ postId: new ObjectId(postId) }).count();
   },
   allComments: async (parent, { postId }, { db }) => {
-    return await db.collection('comment').find({ postId }).toArray();
+    return await db.collection('comment').find({ postId: new ObjectId(postId) }).toArray();
   },
   comment: async (parent, { commentId }, { db }) => {
     const findComment = await db.collection('comment').findOne({ _id: new ObjectId(commentId) });
