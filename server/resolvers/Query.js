@@ -30,9 +30,8 @@ export default {
   totalPosts: async (parent, args, { db }) => {
     return await db.collection('post').estimatedDocumentCount();
   },
-  allPosts: async (parent, {cursor, limit}, { db }) => {
-    if (!cursor) return await db.collection('post').find().toArray();
-    return await db.collection('post').find(p => p.created < cursor).sort({ created: -1 }).limit(limit).toArray();
+  allPosts: async (parent, {page, limit}, { db }) => {
+    return await db.collection('post').find().sort({ created: -1 }).skip((page-1)*limit).limit(limit).toArray();
   },
   post: async (parent, { postId }, { db }) => {
     const _id = new ObjectId(postId);
