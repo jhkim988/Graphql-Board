@@ -1,13 +1,11 @@
 import { Fragment } from "react";
 
-const PostWindow = (props) => {
+const PostWindow = ({ post }) => {
   return (
-    <Fragment>
-      <p>title</p>
-      {/* <img src='' alt=''></img> */}
-      <p>content</p>
-      <p>Good: , Bad: </p>
-    </Fragment>
+    <div>
+      <div className='form-control'>{post.title}</div>
+      <div className='form-control'>{post.content}</div>
+    </div>
   )
 }
 

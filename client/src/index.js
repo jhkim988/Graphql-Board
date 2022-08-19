@@ -40,6 +40,8 @@ const authLink = new ApolloLink((operation, forward) => {
   operation.setContext(context => ({
     headers: {
       ...context.headers,
+      login: localStorage.getItem('login'),
+      logintype: localStorage.getItem('loginType'),
       authorization: localStorage.getItem('token')
     }
   }));

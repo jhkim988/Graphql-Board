@@ -1,80 +1,53 @@
 import { Fragment, useState } from "react"
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import PostWindow from "./PostWindow.js";
 import CommentWindow from "./CommentWindow.js";
 import PostUpdateWindow from './PostUpdateWindow.js'
 import Score from "./Score.js";
+import { GET_POST, UPDATE_POST, DELETE_POST } from '../operations.js';
 
-const GET_POST = gql`
-  query getPost($postId: ID!) {
-    post(postId: $postId) {
-      title
-      content
-      photo
-      good
-      bad
-      poastedBy {
-        name
-      }
-      comments {
-        _id
-        commentedBy {
-          name
-        }
-        content
-        created
-      }
-      created
-      updated
-    }
-  }
-`
-const UPDATE_POST = gql`
-  mutation updatePost($postId: ID!, $postInfo: postInfo) {
-    updatePost(postId: $postId, postInfo: $postInfo)
-  }
-`
-const DELETE_POST = gql`
-  mutation deletePost($postId: ID!) {
-    deletePost(postId: $postId)
-  }
-`
-
-const PostAndComment = (props) => {
+const PostAndComment = ({ postId }) => {
   const [ isUpdateWindow, setIsUpdateWindow ] = useState(false);
   const [ postInfo, setPostInfo ] = useState({});
-  const { loading, error, data, refetch } = useQuery(GET_POST, { variables: { postId: props.postId}});
-  const [ updatePost ] = useMutation(UPDATE_POST,
-    {
-      variables: {
-      postId: props.postId,
-      postInfo: postInfo,
-    }
-  });
+  const { loading, error, data, refetch } = useQuery(GET_POST, { variables: { postId }});
+
   const [ deletePost ] = useMutation(DELETE_POST);
-  const [ score, setScore ] = useState({ good: data.good, bad: data.bad});
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>Error {error.message}</p>
+  // const [ score, setScore ] = useState({ good: data?.good || 0, bad: data?.bad || 0 });
+  // if (loading) return <p>Loading...</p>
+  // if (error) return <p>Error {error.message}</p>
+
+  const update = () => {
+    setIsUpdateWindow(true);
+  }
+
+  if (loading) return <p>loading...</p>
+  if (error) return <p>{`Error: ${error.message}`}</p>
+  console.log(data);
   return (
-    <Fragment>
-      <button>X</button>
-      {
-      isUpdateWindow
-        ? <PostUpdateWindow setPostInfo={setPostInfo} setIsUpdateWindow={setIsUpdateWindow} updatePost={updatePost}/>
-        : <PostWindow data={data} />
-      }
-      <Score good={data.good} bad={data.bad} setScore={setScore}/>
-      {
-        isUpdateWindow && (
-        <Fragment>
-          <button onClick={() => setIsUpdateWindow(!isUpdateWindow)}>수정</button> 
-          <button onClick={deletePost}>삭제</button>
-          <button onClick={refetch}>새로고침</button>
-        </Fragment>
-        )
-      }
-      <CommentWindow commentsList={data.comments}/>
-    </Fragment>
+    <div className='col-md-12'>
+      <div className='col-md-4'>
+        {
+          isUpdateWindow
+          ? <PostUpdateWindow post={data.post}/>
+          : <PostWindow post={data.post}/>
+        }
+        {
+          // buttons
+          isUpdateWindow ||
+          (<Fragment>
+            <Score />
+            <div className='row'>
+              <button onClick={update} className='col-md-2 btn btn-primary'>수정</button>
+              <button className='col-md-2 btn btn-danger'>삭제</button>
+            </div>
+            </Fragment>
+          )
+        }
+      </div>
+      <div className='col-md-2'>
+
+      </div>
+    </div>
   )
 }
 

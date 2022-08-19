@@ -9,8 +9,8 @@ const Score = (props) => {
   }
   return (
     <Fragment>
-      <button onClick={goodClick}>Good: {props.good}</button>
-      <button onClick={badClick}>Bad: {props.bad}</button>
+      <button onClick={goodClick} className='col-md-2 btn btn-warning'>Good: {props.good}</button>
+      <button onClick={badClick} className='col-md-2 btn btn-dark'>Bad: {props.bad}</button>
     </Fragment>
   )
 }

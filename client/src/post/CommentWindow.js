@@ -1,19 +1,15 @@
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { Fragment } from "react";
+import { DELETE_COMMENT } from '../operations.js';
 
-const DELETE_COMMENT = gql`
-  mutation($commentId: ID!) {
-    deleteComment(commentId: $commentId)
-}
-`
 const Comment = (props) => {
-  const [ deleteFuntion ] = useMutation(DELETE_COMMENT, { variables: { commentId: props.commentData_id }});
+  // const [ deleteFuntion ] = useMutation(DELETE_COMMENT, { variables: { commentId: props.commentData_id }});
   return (
     <Fragment>
     <p>d.commentedBy.name</p>
     <p>d.content</p>
     <p>created</p>
-    <button onClick={deleteFuntion}>삭제</button>
+    <button>삭제</button>
   </Fragment>
   )
 }
