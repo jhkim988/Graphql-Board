@@ -85,12 +85,13 @@ const start = async() => {
     path: '/graphql'
   });
   const serverCleanup = useServer({
-    typeDefs,
-    resolvers,
+    schema,
     context: async (ctx, msg, args) => {
       // to do: Identify Login Type
       const token = ctx.Authorization;
-      const currentUser = await db.collection('user').findOne({ token });
+      const login = ctx.login;
+      const loginType = ctx.loginType;
+      const currentUser = await db.collection('user').findOne({ $and: [{login}, {loginType}, {token}] });
       return { pubsub, db, currentUser };
     }
   }, wsServer);

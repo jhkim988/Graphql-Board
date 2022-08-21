@@ -26,7 +26,7 @@ export default {
       return await db.collection('comment').find({ postId: parent._id }).estimatedDocumentCount();
     },
     comments: async (parent, args, { db }) => {
-      return await db.collection('comment').find({ postId: parent._id }).toArray();
+      return await db.collection('comment').find({ postId: parent._id }).sort({ created: -1 }).toArray();
     }
   },
   Comment: {

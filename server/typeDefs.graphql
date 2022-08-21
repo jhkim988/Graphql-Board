@@ -54,7 +54,7 @@ type Query {
   userById(userId: ID!): User!
   userByLoginInfo(userLoginInfo: UserLoginInfo!): User!
   totalPosts: Int!
-  allPosts(cursor: String, limit: Int=1): [Post!]!
+  allPosts(page: Int=1, limit: Int=5): [Post!]!
   post(postId: ID!): Post!
   totalComments(postId: ID!): Int!
   allComments(postId: ID!): [Comment!]!
@@ -85,8 +85,10 @@ type Mutation {
 
 type Subscription {
   commentsAlarm: Post!
-  newScore(postId: ID): Post!
-  newComment(postId: ID): Comment!
+  newAddGood(postId: ID!): Post!
+  newAddBad(postId: ID!): Post!
+  newComment(postId: ID!): Comment!
+  newDeleteComment(postId: ID!): String!
 }
 type AuthPayLoad {
   token: String!
