@@ -38,6 +38,7 @@ const start = async() => {
   const server = new ApolloServer({
     schema,
     csrfPrevention: true,
+    cors: { origin: ["http://localhost:3000"]},
     context: async ({ req, connection }) => {
       // http or websocket
       const token = req ? req.headers.authorization: connection.context.Authorization;
@@ -67,11 +68,11 @@ const start = async() => {
   // CORS:
   app.use(cors({
     origin: 'http://localhost:3000',
-    credential: true
+    credentials: true
   }));
 
   // Route:
-  app.use('/img/photos', express(path.join(path.resolve(), 'assets', 'photos')));
+  app.use('/img/photos', express.static(path.join(path.resolve(), 'assets', 'photos')));
   app.use(graphqlUploadExpress());
   app.get('/', (req, res) => {
 

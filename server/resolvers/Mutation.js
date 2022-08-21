@@ -1,11 +1,13 @@
+import fs from 'fs';
+import path from 'path';
 import githubLogin from '../oauth/githubLogin.js';
 import naverLogin from '../oauth/naverLogin.js';
 import googleLogin from '../oauth/googleLogin.js';
 import { ObjectId } from 'mongodb'
-import { NoUser, NoPost, NoComment, AccessDenied, DuplicateGood, DuplicateBad, AcknowledgedFalse } from './errorMessage.js';
+import { NoUser, NoPost, NoComment, AccessDenied, DuplicateGood, DuplicateBad } from './errorMessage.js';
 
 const fileNameGenerator = (fileName) => {
-  const [ name, ext ] = fileName.spli('.');
+  const [ name, ext ] = fileName.split('.');
   name.replace(/[.\s]/g, '');
   return `${(new Date()).toISOString().replace(/[^0-9]/g, '')}${name}.${ext}`;
 }
@@ -57,10 +59,10 @@ export default {
     const { createReadStream, filename, mimetype, encoding } = await file;
     const saveName = fileNameGenerator(filename);
     const toPath = path.join(path.resolve(), 'assets', 'photos', saveName);
-    const stream = createWriteStream();
+    const stream = createReadStream();
     const out = fs.createWriteStream(toPath);
     await stream.pipe(out);
-    return { filename: toPath, mimetype, encoding }
+    return { filename: saveName, mimetype, encoding }
   },
   createPost: async (parent, { postInfo }, { db, currentUser }) => {
     if (!currentUser) {
