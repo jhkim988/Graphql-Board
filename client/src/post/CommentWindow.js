@@ -1,25 +1,39 @@
 import { useMutation } from "@apollo/client";
-import { Fragment } from "react";
-import { DELETE_COMMENT } from '../operations.js';
+import { Fragment, useCallback } from "react";
+import { TableRow, TableCell, Button } from '@mui/material';
 
-const Comment = (props) => {
-  // const [ deleteFuntion ] = useMutation(DELETE_COMMENT, { variables: { commentId: props.commentData_id }});
+import { DELETE_COMMENT } from '../operations.js';
+import CommentCreate from "./CommentCreate.js";
+import { dateFormat } from "../App";
+
+const Comment = ({ commentData }) => {
+  const [ deleteComment ] = useMutation(DELETE_COMMENT, {
+    variables: { commentId: commentData._id }
+  });
+  const clickDeleteComment = useCallback(() => {
+    deleteComment();
+  }, []);
   return (
-    <Fragment>
-    <p>d.commentedBy.name</p>
-    <p>d.content</p>
-    <p>created</p>
-    <button>삭제</button>
-  </Fragment>
+    <TableRow spacing={2}>
+      <TableCell xs={2}>{commentData.commentedBy.name}</TableCell>
+      <TableCell xs={8}>{commentData.content}</TableCell>
+      <TableCell xs={1}>{dateFormat(commentData.created)}</TableCell>
+      <TableCell xs={1}><Button variant='contained' onClick={clickDeleteComment}>X</Button></TableCell>
+    </TableRow>
   )
 }
 
-const CommentList = (props) => {
-  return props.data.map(d => <Comment commentData={d}/>);
+const CommentList = ({ data }) => {
+  return data.map(comment => <Comment commentData={comment}/>);
 }
 
-const CommentWindow = (props) => {
-  return <CommentList data={props.commentsList}/>
+const CommentWindow = ({ post }) => {
+  return (
+    <Fragment>
+      <CommentCreate postId={post._id} />
+      <CommentList data={post.comments}/>
+    </Fragment>
+  );
 }
 
 export default CommentWindow;

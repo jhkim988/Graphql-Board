@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import 'bootstrap/dist/css/bootstrap.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { InMemoryCache, ApolloLink, split, ApolloClient, ApolloProvider } from '@apollo/client';
@@ -11,19 +10,7 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { createUploadLink } from 'apollo-upload-client';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const cache = new InMemoryCache({
-  // typePolicies: {
-  //   User: {
-  //     keyFields: ['login', 'loginType']
-  //   },
-  //   Post: {
-  //     keyFields: ["title", "postedBy", ["name"]]
-  //   },
-  //   Comment: {
-  //     keyFields: ["commentedBy", ["name"]]
-  //   }
-  // }
-});
+const cache = new InMemoryCache();
 persistCache({ cache, storage: localStorage });
 
 if (localStorage['apollo-cache-persist']) {
@@ -33,7 +20,7 @@ if (localStorage['apollo-cache-persist']) {
 
 const httpLink = new createUploadLink({ uri: 'http://localhost:4000/graphql'});
 const wsLink = new GraphQLWsLink(createClient({
-  url: 'http://localhost:4000/graphql',
+  url: 'ws://localhost:4000/graphql',
   options: { reconnect: true }
 }));
 const authLink = new ApolloLink((operation, forward) => {

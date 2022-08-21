@@ -1,54 +1,50 @@
-import { Fragment, useState } from "react"
+import { useCallback } from "react"
 import { useQuery, useMutation } from "@apollo/client";
+import { Grid, Stack, ButtonGroup, Button } from '@mui/material';
+
 import PostWindow from "./PostWindow.js";
 import CommentWindow from "./CommentWindow.js";
-import PostUpdateWindow from './PostUpdateWindow.js'
 import Score from "./Score.js";
-import { GET_POST, UPDATE_POST, DELETE_POST } from '../operations.js';
 
-const PostAndComment = ({ postId }) => {
-  const [ isUpdateWindow, setIsUpdateWindow ] = useState(false);
-  const [ postInfo, setPostInfo ] = useState({});
-  const { loading, error, data, refetch } = useQuery(GET_POST, { variables: { postId }});
+import { VIEW_STATE } from "../App.js";
+import { GET_POST, DELETE_POST } from '../operations.js';
 
+const PostAndComment = ({ postId, setViewState }) => {
+  const { loading, error, data } = useQuery(GET_POST, { 
+    fetchPolicy: 'network-only',
+    variables: { postId }
+  });
   const [ deletePost ] = useMutation(DELETE_POST);
-  // const [ score, setScore ] = useState({ good: data?.good || 0, bad: data?.bad || 0 });
-  // if (loading) return <p>Loading...</p>
-  // if (error) return <p>Error {error.message}</p>
-
-  const update = () => {
-    setIsUpdateWindow(true);
-  }
-
+  const clickUpdate = useCallback(() => {
+    setViewState(VIEW_STATE.UPDATE_POST);
+  }, []);
+  const clickDelete = useCallback(() => {
+    deletePost({ variables: { postId } });
+    setViewState(VIEW_STATE.MAIN);
+  }, []);
+  const clickCancel = useCallback(() => {
+    setViewState(VIEW_STATE.MAIN);
+  }, []);
   if (loading) return <p>loading...</p>
   if (error) return <p>{`Error: ${error.message}`}</p>
-  console.log(data);
   return (
-    <div className='col-md-12'>
-      <div className='col-md-4'>
-        {
-          isUpdateWindow
-          ? <PostUpdateWindow post={data.post}/>
-          : <PostWindow post={data.post}/>
-        }
-        {
-          // buttons
-          isUpdateWindow ||
-          (<Fragment>
-            <Score />
-            <div className='row'>
-              <button onClick={update} className='col-md-2 btn btn-primary'>수정</button>
-              <button className='col-md-2 btn btn-danger'>삭제</button>
-            </div>
-            </Fragment>
-          )
-        }
-      </div>
-      <div className='col-md-2'>
-
-      </div>
-    </div>
-  )
+    <Grid container spacing={2}>
+      <Grid item xs={6}>
+        <Stack spacing={2}>
+          <PostWindow post={data.post}/>
+          <Score post={data.post} />
+          <ButtonGroup>
+          <Button onClick={clickCancel}>뒤로가기</Button>
+            <Button onClick={clickUpdate}>수정</Button>
+            <Button onClick={clickDelete}>삭제</Button>
+          </ButtonGroup>
+        </Stack>
+      </Grid>
+      <Grid item xs={6}>
+        <CommentWindow post={data.post}/>
+      </Grid>
+    </Grid>
+  );
 }
 
 export default PostAndComment;

@@ -7,7 +7,7 @@ import UserInfo from './UserInfo.js';
 
 import { ME } from './operations';
 
-import { PostAndComment } from './post';
+import PostAndComment from './post/PostAndComment.js';
 import PostUpdateWindow from './post/PostUpdateWindow';
 import PostCreateWindow from './post/PostCreateWindow';
 
@@ -17,7 +17,10 @@ export const VIEW_STATE = {
   UPDATE_POST: 'update_post',
   CREATE_POST: 'create_post',
 }
-
+export const dateFormat = str => {
+  const date = new Date(str);
+  return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`;
+}
 const App = () => {
   // Login Status, View Status
   const meQuery = useQuery(ME);
@@ -31,23 +34,23 @@ const App = () => {
       {
         // Login/UserInfo:
         meQuery.errors
-        ? <p>LoginStatus Error: {meQuery.errors}</p>
+          ? <p>LoginStatus Error: {meQuery.errors}</p>
         : meQuery.loading
           ? <p>LoginStatus Loading</p>
-          : isLoggedIn
-            ? <UserInfo setIsLoggedIn={setIsLoggedIn} meQueryData={meQuery.data}/>
-            : <Login setIsLoggedIn={setIsLoggedIn}/>
+        : isLoggedIn
+          ? <UserInfo setIsLoggedIn={setIsLoggedIn} meQueryData={meQuery.data}/>
+          : <Login setIsLoggedIn={setIsLoggedIn}/>
       } 
       {
         // view:
         viewState === VIEW_STATE.MAIN
-          ? <Main setViewState={setViewState} setPostId={setPostId}/>
+          ? <Main isLoggedIn={isLoggedIn} setViewState={setViewState} setPostId={setPostId} />
         : viewState === VIEW_STATE.VIEW_POST
-          ? <PostAndComment />
+          ? <PostAndComment postId={postId} setViewState={setViewState} />
         : viewState === VIEW_STATE.UPDATE_POST
-          ? <PostUpdateWindow />
+          ? <PostUpdateWindow postId={postId} setViewState={setViewState}/>
         : viewState === VIEW_STATE.CREATE_POST
-          ? <PostCreateWindow />
+          ? <PostCreateWindow setViewState={setViewState}/>
         : <p>Wrong State</p>
       }
     </Fragment>

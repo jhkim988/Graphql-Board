@@ -1,12 +1,11 @@
-import { Fragment, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useQuery } from "@apollo/client/react";
-import { ALL_POSTS, ME } from './operations.js';
-import { VIEW_STATE  } from "./App.js";
+import { TableContainer, Table, TableHead, TableRow, TableCell, Pagination, Button } from "@mui/material";
 
-const dateFormat = str => {
-  const date = new Date(str);
-  return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`;
-}
+import { ALL_POSTS, ME, TOTAL_POSTS } from './operations.js';
+import { VIEW_STATE, dateFormat } from "./App.js";
+
+const PAGE_LIMIT = 5;
 
 const PostList = ({ data, setViewState, setPostId }) => {
   const clickPost = useCallback((id) => {
@@ -18,48 +17,54 @@ const PostList = ({ data, setViewState, setPostId }) => {
   return (
     data.allPosts.map(post => {
       return (
-        <tr key={post._id}>
-          <th><p onClick={clickPost(post._id)}>{post.title}</p></th>
-          <th>{post.postedBy.name}</th>
-          <th>{dateFormat(post.updated)}</th>
-          <th>{post.good}</th>
-        </tr>
+        <TableRow key={post._id}>
+          <TableCell><p onClick={clickPost(post._id)}>{post.title}</p></TableCell>
+          <TableCell>{post.postedBy.name}</TableCell>
+          <TableCell>{dateFormat(post.updated)}</TableCell>
+          <TableCell>{post.good}</TableCell>
+        </TableRow>
         )
     })
   )
 }
 
-const Main = ({ setViewState, setPostId }) => {
-  const { loading, error, data, refetch } = useQuery(ALL_POSTS,
-    { fetchPolicy: 'network-only' },
-    { variabels: { page: 1, limit: 5 }});
-  const meQuery = useQuery(ME);
+const Main = ({ isLoggedIn, setViewState, setPostId }) => {
+  const [ page, setPage ] = useState(1);
+  const totalPostsResult = useQuery(TOTAL_POSTS, { fetchPolicy: 'network-only' });
+  const { loading, error, data } = useQuery(ALL_POSTS, {
+    fetchPolicy: 'network-only',
+    variables: { page, limit: PAGE_LIMIT }});
   const clickPostCreate = useCallback(() => {
-    if (!meQuery.data?.me) {
+    if (!isLoggedIn) {
       alert('로그인 해야 글 작성이 가능합니다.');
       return;
     }
     setViewState(VIEW_STATE.CREATE_POST);
+  }, [isLoggedIn]);
+  const paginationChange = useCallback((event, value) => {
+    setPage(value);
   }, []);
-  if (loading) return <p>loading...</p>
+  if (loading || totalPostsResult.loading) return <p>loading...</p>
   if (error) return <p>ERROR: {error.message}</p>
+  if (totalPostsResult.error) return <p>Error: {totalPostsResult.error.message}</p>
   return (
-    <Fragment>
-      <table>
-        <tr>
-          <th>제목</th>
-          <th>작성자</th>
-          <th>최종수정일</th>
-          <th>추천</th>
-        </tr>
-        <tbody>
-          <PostList data={data} setViewState={setViewState} setPostId={setPostId}/>
-        </tbody>
-      </table>
-      <button onClick={clickPostCreate}>글 작성</button>
-      <button>pagination</button>
-    </Fragment>
+    <TableContainer>
+      <Table>
+        <TableHead>
+            <TableRow>
+              <TableCell>제목</TableCell>
+              <TableCell>작성자</TableCell>
+              <TableCell>최종수정일</TableCell>
+              <TableCell>추천</TableCell>
+            </TableRow>
+        </TableHead>
+        <PostList data={data} setViewState={setViewState} setPostId={setPostId}/>
+      </Table>
+      <Pagination count={(totalPostsResult.data.totalPosts%PAGE_LIMIT == 0 ? 0 : 1) + parseInt(totalPostsResult.data.totalPosts/PAGE_LIMIT)} page={page} onChange={paginationChange}/>
+      <Button onClick={clickPostCreate}>글 작성</Button>
+    </TableContainer>
   );
+  // ToDo: Pagination use MUI
 }
 
 export default Main;

@@ -1,5 +1,6 @@
 import { useMutation, useApolloClient } from "@apollo/client";
-import { Fragment, useEffect } from "react";
+import { useEffect } from "react";
+import { ButtonGroup, Button } from '@mui/material';
 import { GITHUB_LOGIN, ME } from './operations.js';
 
 const GITHUB_LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&scope=user`;
@@ -29,11 +30,11 @@ const Login = ({ setIsLoggedIn }) => {
     }
   }, []);
   return (
-    <Fragment>
-      <a href={GITHUB_LOGIN_URL}><button className='btn btn-warning'>Github 로그인</button></a>
-      <a href='' role='button' className='btn btn-success'>Naver 로그인</a>
-      <a href='' role='button' className='btn btn-danger'>Google 로그인</a>
-    </Fragment>
+    <ButtonGroup>
+      <a href={GITHUB_LOGIN_URL}><Button>Github 로그인</Button></a>
+      <a href={GITHUB_LOGIN_URL}><Button>Naver 로그인</Button></a>
+      <a href={GITHUB_LOGIN_URL}><Button>Google 로그인</Button></a>
+    </ButtonGroup>
   );
 }
 export default Login;

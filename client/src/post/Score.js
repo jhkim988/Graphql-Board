@@ -1,17 +1,52 @@
-import { Fragment } from "react"
+import { ButtonGroup, Button } from '@mui/material'
+import { useState } from 'react';
+import { useMutation, useSubscription, useApolloClient } from '@apollo/client';
+import { ADD_BAD, ADD_GOOD, SUBSCRIPTION_ADD_GOOD, SUBSCRIPTION_ADD_BAD, GET_POST } from '../operations';
 
-const Score = (props) => {
+const Score = ({ post }) => {
+  const client = useApolloClient();
+  const [ good, setGood ] = useState(post.good);
+  const [ bad, setBad ] = useState(post.bad);
+  const [ addGood, addGoodResult ] = useMutation(ADD_GOOD);
+  const [ addBad, addBadResult ] = useMutation(ADD_BAD);
+  useSubscription(SUBSCRIPTION_ADD_GOOD, {
+    variables: { postId: post._id },
+    onSubscriptionData: ({ subscriptionData }) => {
+      client.cache.updateQuery({
+        query: GET_POST,
+        variables: { postId: post._id },
+      }, () => ({
+          good: subscriptionData.data.newAddGood.good
+      }));
+      setGood(subscriptionData.data.newAddGood.good);
+    }
+  });
+  useSubscription(SUBSCRIPTION_ADD_BAD, {
+    variables: { postId: post._id },
+    onSubscriptionData: ({ subscriptionData }) => {
+      client.cache.updateQuery({
+        query: GET_POST,
+        variables: { postId: post._id },
+      }, () => ({
+          bad: subscriptionData.data.newBadGood.bad
+      }));
+      setBad(subscriptionData.data.newBadGood.bad);
+    }
+  })
+  if (addGoodResult.error || addBadResult.error) {
+    alert(addGoodResult.error || addBadResult.error);
+  }
   const goodClick = () => {
-    props.setScore(props.good+1);
+    addGood({ variables: { postId: post._id }});
   }
   const badClick = () => {
-    props.setScore(props.bad+1);
+    addBad({ variables: { postId: post._id }});
   }
   return (
-    <Fragment>
-      <button onClick={goodClick} className='col-md-2 btn btn-warning'>Good: {props.good}</button>
-      <button onClick={badClick} className='col-md-2 btn btn-dark'>Bad: {props.bad}</button>
-    </Fragment>
+    <ButtonGroup>
+      <Button onClick={goodClick}>Good: {good}</Button>
+      <Button onClick={badClick}>Bad: {bad}</Button>
+    </ButtonGroup>
   )
 }
 

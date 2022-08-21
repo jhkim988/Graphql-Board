@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { useApolloClient } from "@apollo/client";
+import { Grid, Button } from '@mui/material';
+
 import { ME } from './operations.js';
 
 const UserInfo = ({ setIsLoggedIn, meQueryData }) => {
@@ -12,11 +14,17 @@ const UserInfo = ({ setIsLoggedIn, meQueryData }) => {
     setIsLoggedIn(false);
   }, []);
   return (
-    <div className='row'>
-      <img src={meQueryData.me.avatar} width={48} height={48} alt='' className='col-2'/>
-      <p className='col-2'>Hello, {meQueryData.me.name}!</p>
-      <button onClick={logout} className='col-1'>logout</button>
-    </div>
+    <Grid container>
+      <Grid item xs={2}>
+        <img src={meQueryData.me.avatar} width={48} height={48} alt='' className='col-2'/>
+      </Grid>
+      <Grid item xs={2}>
+        <p className='col-2'>Hello, {meQueryData.me.name}!</p>
+      </Grid>
+      <Grid item xs={2}>
+        <Button onClick={logout} className='col-1'>logout</Button>
+      </Grid>
+    </Grid>
   );
 }
 
