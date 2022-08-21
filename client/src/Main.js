@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useQuery } from "@apollo/client/react";
 import { TableContainer, Table, TableHead, TableRow, TableCell, Pagination, Button } from "@mui/material";
 
-import { ALL_POSTS, ME, TOTAL_POSTS } from './operations.js';
+import { ALL_POSTS, TOTAL_POSTS } from './operations.js';
 import { VIEW_STATE, dateFormat } from "./App.js";
 
 const PAGE_LIMIT = 5;
@@ -31,7 +31,7 @@ const PostList = ({ data, setViewState, setPostId }) => {
 const Main = ({ isLoggedIn, setViewState, setPostId }) => {
   const [ page, setPage ] = useState(1);
   const totalPostsResult = useQuery(TOTAL_POSTS, { fetchPolicy: 'network-only' });
-  const { loading, error, data } = useQuery(ALL_POSTS, {
+  const { loading, error, data, refetch } = useQuery(ALL_POSTS, {
     fetchPolicy: 'network-only',
     variables: { page, limit: PAGE_LIMIT }});
   const clickPostCreate = useCallback(() => {
@@ -60,11 +60,11 @@ const Main = ({ isLoggedIn, setViewState, setPostId }) => {
         </TableHead>
         <PostList data={data} setViewState={setViewState} setPostId={setPostId}/>
       </Table>
-      <Pagination count={(totalPostsResult.data.totalPosts%PAGE_LIMIT == 0 ? 0 : 1) + parseInt(totalPostsResult.data.totalPosts/PAGE_LIMIT)} page={page} onChange={paginationChange}/>
+      <Pagination count={(totalPostsResult.data.totalPosts%PAGE_LIMIT === 0 ? 0 : 1) + parseInt(totalPostsResult.data.totalPosts/PAGE_LIMIT)} page={page} onChange={paginationChange}/>
       <Button onClick={clickPostCreate}>글 작성</Button>
+      <Button onClick={refetch}>새로고침</Button>
     </TableContainer>
   );
-  // ToDo: Pagination use MUI
 }
 
 export default Main;
