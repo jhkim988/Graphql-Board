@@ -7,6 +7,12 @@ const PostWindow = ({ post }) => {
       <TableRow>
         <TableCell>제목: {post.title}</TableCell>
       </TableRow>
+      {
+      post.photo &&
+        <TableRow>
+          <img src={`http://localhost:4000/img/photos/${post.photo}`} alt=''/>
+        </TableRow>
+      }
       <TableRow>
       <TableCell style={{ 'whiteSpace': 'pre-wrap' }}>{post.content}</TableCell>
       </TableRow>

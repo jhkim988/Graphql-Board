@@ -83,7 +83,7 @@ export const DELETE_POST = gql`
 export const CREATE_PHOTO = gql`
   mutation createPhoto($file: Upload!) {
     createPhoto(file: $file) {
-      title
+      filename
       mimetype
       encoding
     }

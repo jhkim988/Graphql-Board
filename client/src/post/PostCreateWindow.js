@@ -2,39 +2,41 @@ import { useMutation } from "@apollo/client";
 import { useCallback, useState } from "react";
 import { CREATE_POST, CREATE_PHOTO } from '../operations.js'
 import { VIEW_STATE } from "../App.js";
-import { TextField, ButtonGroup, Button, Grid } from '@mui/material';
+import { TextField, ButtonGroup, Button } from '@mui/material';
 import { Stack } from "@mui/system";
 
 const PostCreateWindow = ({ setViewState }) => {
   const [ postInfo, setPostInfo ] = useState({ title: null, content: null, photo: null });
   const [ file, setFile ] = useState();
   const [ createPost, createPostResult ] = useMutation(CREATE_POST);
-  const [ createPhoto, createPhotoResult ] = useMutation(CREATE_PHOTO);
+  const [ createPhoto, createPhotoResult ] = useMutation(CREATE_PHOTO, {
+    onCompleted: (data) => {
+      setFile({ ...file, name: data.createPhoto.filename});
+    }
+  });
   const onChange = useCallback(e => {
     setPostInfo({
       ...postInfo,
       [e.target.name]: e.target.value
     })
   }, [postInfo]);
-  const onChangeFile = useCallback(e => {
+  const onChangeFile = useCallback(async e => {
     const { target: { validity, files: [file]}} = e;
     validity ? setFile(file) : setFile(null);
+    await createPhoto({ variables: { file }, context: { headers: {'apollo-require-preflight': 'true'}}});
+    if (createPhotoResult.error) {
+      alert(`Create Photo Error: ${createPhotoResult.error.message}`);
+    }
   }, []);
 
   const clickCancel = useCallback(() => {
     setViewState(VIEW_STATE.MAIN);
   }, []);
-  const clickCreate = () => {
-    if (file) {
-      createPhoto({ variables: { file }, context: { headers: {'apollo-require-preflight': 'true'}}});
-      if (createPhotoResult.error) {
-        alert(`Create Photo Error: ${createPhotoResult.error.message}`);
-      }
-    }
-    createPost({ variables: { postInfo: { ...postInfo, photo: createPhotoResult?.data?.filename }}});
+  const clickCreate = async () => {
+    await createPost({ variables: { postInfo: { ...postInfo, photo: file ? file.name : undefined }}});
     if (createPostResult.error) {
       alert(`Create Post Error: ${createPostResult.error.message}`);
-    }
+    }    
     setViewState(VIEW_STATE.MAIN);
     alert('글이 등록되었습니다.');
   }
