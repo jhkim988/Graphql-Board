@@ -62,7 +62,7 @@ const Main = ({ isLoggedIn, setViewState, setPostId }) => {
       </Table>
       <Pagination count={(totalPostsResult.data.totalPosts%PAGE_LIMIT === 0 ? 0 : 1) + parseInt(totalPostsResult.data.totalPosts/PAGE_LIMIT)} page={page} onChange={paginationChange}/>
       <Button onClick={clickPostCreate}>글 작성</Button>
-      <Button onClick={refetch}>새로고침</Button>
+      <Button onClick={() => refetch({ variables: {fetchPolicy: 'network-only', variables: { page, limit: PAGE_LIMIT }}})}>새로고침</Button>
     </TableContainer>
   );
 }
