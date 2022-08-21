@@ -6,3 +6,4 @@ export const NotLoggedIn = new Error(`Not Logged In.`);
 export const DuplicateGood = new Error(`Do Not Allow Duplicated Good`);
 export const DuplicateBad = new Error(`Do Not Allow Duplicated Bad`);
 export const AcknowledgedFalse = new Error(`Acknowledged False`);
+export const FileDeleteException = new Error(`FileDeleteException`)

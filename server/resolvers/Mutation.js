@@ -4,7 +4,7 @@ import githubLogin from '../oauth/githubLogin.js';
 import naverLogin from '../oauth/naverLogin.js';
 import googleLogin from '../oauth/googleLogin.js';
 import { ObjectId } from 'mongodb'
-import { NoUser, NoPost, NoComment, AccessDenied, DuplicateGood, DuplicateBad } from './errorMessage.js';
+import { NoUser, NoPost, NoComment, AccessDenied, DuplicateGood, DuplicateBad, FileDeleteException } from './errorMessage.js';
 
 const fileNameGenerator = (fileName) => {
   const [ name, ext ] = fileName.split('.');
@@ -104,6 +104,13 @@ export default {
     if (findPost.userId != currentUser._id.toString()) {
       throw AccessDenied;
     }
+    // file delte
+    if (findPost.photo) fs.unlink(`./assets/photos/${findPost.photo}`, err => {
+      if (err) {
+        console.log(err);
+        throw FileDeleteException;
+      }
+    });
     // delete all inner comments:
     await db.collection('comment').deleteMany({ postId });
     
@@ -132,6 +139,9 @@ export default {
     return newComment;
   },
   deleteComment: async (parent, { commentId }, { db, currentUser, pubsub }) => {
+    if (!currentUser) {
+      throw AccessDenied;
+    }
     const objectId = new ObjectId(commentId);
     const findComment = await db.collection('comment').findOne({ _id: objectId });
     if (!findComment) {
