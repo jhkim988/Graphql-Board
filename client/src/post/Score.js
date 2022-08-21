@@ -15,8 +15,9 @@ const Score = ({ post }) => {
       client.cache.updateQuery({
         query: GET_POST,
         variables: { postId: post._id },
-      }, () => ({
-          good: subscriptionData.data.newAddGood.good
+      }, (data) => ({
+        ...data,
+        good: subscriptionData.data.newAddGood.good
       }));
       setGood(subscriptionData.data.newAddGood.good);
     }
@@ -27,10 +28,11 @@ const Score = ({ post }) => {
       client.cache.updateQuery({
         query: GET_POST,
         variables: { postId: post._id },
-      }, () => ({
-          bad: subscriptionData.data.newBadGood.bad
+      }, (data) => ({
+        ...data,
+        bad: subscriptionData.data.newAddBad.bad
       }));
-      setBad(subscriptionData.data.newBadGood.bad);
+      setBad(subscriptionData.data.newAddBad.bad);
     }
   })
   if (addGoodResult.error || addBadResult.error) {

@@ -11,13 +11,13 @@ const CommentCreate = ({ postId }) => {
     setContent(e.target.value);
   }, [])
   const clickCommentAdd = useCallback(() => {
-    console.log(postId, content)
     createComment({ variables: { postId, content }});
+    setContent('');
   }, [content]);
   return (
     <Grid container spacing={2}>
       <Grid item xs={10}>
-        <TextField sx={{ width: '100%' }}value={content} onChange={commentInputChange} placeholder="댓글을 입력하세요"/>
+        <TextField sx={{ width: '100%' }} value={content} onChange={commentInputChange} placeholder="댓글을 입력하세요"/>
       </Grid>
       <Grid item xs={2}>
         <Button variant='contained' onClick={clickCommentAdd}>입력</Button>

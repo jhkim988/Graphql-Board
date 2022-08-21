@@ -43,6 +43,7 @@ export const GET_POST = gql`
       }
       comments {
         _id
+        postId
         commentedBy {
           name
         }
@@ -147,8 +148,21 @@ export const SUBSCRIPTION_ADD_BAD = gql`
     }
   }
 `
-export const SUBSCRIPTION_NEW_COMMENTS = gql`
-  subscription newComments($postId: ID!) {
-    newComment(postId: $postId)
+export const SUBSCRIPTION_NEW_COMMENT = gql`
+  subscription newComment($postId: ID!) {
+    newComment(postId: $postId) {
+      _id
+      postId
+      commentedBy {
+        name
+      }
+      content
+      created
+    }
+  }
+`
+export const SUBSCRIPTION_NEW_DELETE_COMMENT = gql`
+  subscription newDeleteComment($postId: ID!) {
+    newDeleteComment(postId: $postId)
   }
 `
