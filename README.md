@@ -38,10 +38,10 @@ App ─┬─┬─ Login
 * 실행 후 /graphql에 접속하여 playground에 연결할 수 있습니다.
 * 아래는 데이터베이스 구조입니다.
 ```
-[Post Write]     User : Post - 1:N
-[Comment Write]  User : Comment - 1:N
-[Comment in Post]Post : Comment - 1:N
-[Good/Bad]User : Post - N:M
+[Post Write]      User : Post - 1:N
+[Comment Write]   User : Comment - 1:N
+[Comment in Post] Post : Comment - 1:N
+[Good/Bad]        User : Post - N:M
 ```
 * 자세한 스키마 구조, 리졸버는 TypeDefs.graphql 파일, ./resolver 에서 확인 가능합니다.
 * npm run test를 실행하여 resolver unit test를 진행할 수 있습니다.
