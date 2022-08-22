@@ -45,7 +45,45 @@ App ─┬─┬─ Login
 ```
 * 자세한 스키마 구조, 리졸버는 TypeDefs.graphql 파일, ./resolver 에서 확인 가능합니다.
 * npm run test를 실행하여 resolver unit test를 진행할 수 있습니다.
-
+## 소켓 통신 개요
+0. Apollo Server/Client에서는 Subscription이 Pub-Sub 패턴으로 구현돼 있습니다.
+PubSub 객체를 Apollo Server 컨텍스트에 넣어서 모든 리졸버에서 사용 가능합니다.
+1. Subscription을 TypeDefs.graphql에 등록하고 리졸버를 구현합니다.
+2. Apollo Client에서 useSubscription을 이용하여 이벤트를 subscribe 합니다.
+3. 추천(Good/Bad) 수 변경, 댓글 작성/삭제 등 이벤트가 발생하면 해당 Mutation의 리졸버 내부에서 이벤트를 publish 합니다.
+4. subscribe 하고 있다가 이벤트가 발생하면 데이터를 받아 알맞게 캐싱 데이터를 수정합니다.
+- 아래는 새 댓글을 달았을 때의 예시입니다.
+```graphql
+type Subscription {
+ newComment
+}
+```
+```js
+Subscription: {
+ newComment: {
+  subscribe: (parent, args, { pubsub }) => pubsub.asyncIterator('[eventName]') 
+}
+```
+```js
+Mutation: {
+ addComment: (parent, args, { pubsub }) => {
+  // ... 생략
+  pubsub.publish('[eventName]', { newComment: { [newCommentObject] }})
+ }
+}
+```
+```js
+const client = useApolloClient();
+useSubscription(NEW_COMMENT, {
+ onSubscriptionData: ({ subscriptionData }) => {
+   client.updateQuery({
+   query: [캐싱할 쿼리]
+  }, (data) => {
+   // data 수정하여 리턴
+  });
+ }
+});
+```
 ## 프로젝트 설정 방법
 * ./client 내부에 .env 파일을 생성하여 OAuth 정보를 입력합니다.
 ```
@@ -53,10 +91,10 @@ REACT_APP_GITHUB_CLIENT_ID=[YOUR GITHUB CLIENT ID]
 ```
 * ./server 내부에 .env 파일을 생성하여 DB정보와 OAuth 정보를 입력합니다.
 ```
-DB_HOST=[Your MongoDB HOST URL]
-DB_DATABASE_NAME=[Your MongoDB DATABASE NAME]
+DB_HOST=[YOUR MongoDB HOST URL]
+DB_DATABASE_NAME=[YOUR MongoDB DATABASE NAME]
 
-GITHUB_CLIENT_ID=[YOUT GITHUB CLIENT ID]
+GITHUB_CLIENT_ID=[YOUR GITHUB CLIENT ID]
 GITHUB_CLIENT_SECRET=[YOUR GITHUB CLIENT SECRET]
 ```
 
