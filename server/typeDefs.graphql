@@ -64,8 +64,6 @@ type Query {
 
 type Mutation {
   githubLogin(code: String!): AuthPayLoad!
-  naverLogin(code: String!): AuthPayLoad!
-  googleLogin(code: String!): AuthPayLoad!
 
   createUser(userInfo: UserInfo!): User!
   updateUser(userId: ID! userInfo: UserInfo!): String!

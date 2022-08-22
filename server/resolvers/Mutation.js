@@ -1,8 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import githubLogin from '../oauth/githubLogin.js';
-import naverLogin from '../oauth/naverLogin.js';
-import googleLogin from '../oauth/googleLogin.js';
 import { ObjectId } from 'mongodb'
 import { NoUser, NoPost, NoComment, AccessDenied, DuplicateGood, DuplicateBad, FileDeleteException } from './errorMessage.js';
 
@@ -14,8 +12,6 @@ const fileNameGenerator = (fileName) => {
 
 export default {
   githubLogin,
-  naverLogin,
-  googleLogin,
   createUser: async (parent, { userInfo }, { db }) => {
     const newUser = { ...userInfo, created: new Date(), update: new Date()};
     await db.collection('user').insertOne( newUser );
