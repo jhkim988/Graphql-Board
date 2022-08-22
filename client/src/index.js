@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './main/App.js';
 import reportWebVitals from './reportWebVitals';
 import { InMemoryCache, ApolloLink, split, ApolloClient, ApolloProvider } from '@apollo/client';
 import { persistCache } from 'apollo-cache-persist';

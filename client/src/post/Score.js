@@ -1,7 +1,7 @@
 import { ButtonGroup, Button } from '@mui/material'
 import { useState } from 'react';
 import { useMutation, useSubscription, useApolloClient } from '@apollo/client';
-import { ADD_BAD, ADD_GOOD, SUBSCRIPTION_ADD_GOOD, SUBSCRIPTION_ADD_BAD, GET_POST } from '../operations';
+import { ADD_BAD, ADD_GOOD, SUBSCRIPTION_ADD_GOOD, SUBSCRIPTION_ADD_BAD, GET_POST } from '../main/operations';
 
 const Score = ({ post }) => {
   const client = useApolloClient();

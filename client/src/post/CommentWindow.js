@@ -2,9 +2,9 @@ import { useApolloClient, useMutation, useSubscription } from "@apollo/client";
 import { Fragment, useCallback } from "react";
 import { TableRow, TableCell, Button } from '@mui/material';
 
-import { DELETE_COMMENT, GET_POST, SUBSCRIPTION_NEW_COMMENT, SUBSCRIPTION_NEW_DELETE_COMMENT } from '../operations.js';
+import { DELETE_COMMENT, GET_POST, SUBSCRIPTION_NEW_COMMENT, SUBSCRIPTION_NEW_DELETE_COMMENT } from '../main/operations.js';
 import CommentCreate from "./CommentCreate.js";
-import { dateFormat } from "../App";
+import { dateFormat } from "../main/App";
 
 const Comment = ({ commentData }) => {
   const client = useApolloClient();

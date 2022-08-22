@@ -6,8 +6,8 @@ import PostWindow from "./PostWindow.js";
 import CommentWindow from "./CommentWindow.js";
 import Score from "./Score.js";
 
-import { VIEW_STATE } from "../App.js";
-import { GET_POST, DELETE_POST } from '../operations.js';
+import { VIEW_STATE } from "../main/App.js";
+import { GET_POST, DELETE_POST } from '../main/operations.js';
 
 const PostAndComment = ({ postId, setViewState }) => {
   const { loading, error, data } = useQuery(GET_POST, { 

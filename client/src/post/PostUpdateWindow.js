@@ -2,8 +2,8 @@ import { useCallback, useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { Stack, ButtonGroup, Button, TextField } from '@mui/material'
 
-import { GET_POST, UPDATE_POST } from "../operations";
-import { VIEW_STATE } from "../App";
+import { GET_POST, UPDATE_POST } from "../main/operations";
+import { VIEW_STATE } from "../main/App";
 
 const PostUpdateWindow = ({ postId, setViewState }) => {
   const [ file, setFile ] = useState();

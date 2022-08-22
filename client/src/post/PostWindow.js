@@ -1,4 +1,3 @@
-import { Stack } from "@mui/system";
 import { TableContainer, TableRow, TableCell } from "@mui/material";
 
 const PostWindow = ({ post }) => {

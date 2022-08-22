@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useApolloClient } from "@apollo/client";
 import { Grid, Button } from '@mui/material';
 
-import { ME } from './operations.js';
+import { ME } from '../main/operations.js';
 
 const UserInfo = ({ setIsLoggedIn, meQueryData }) => {
   const client = useApolloClient();

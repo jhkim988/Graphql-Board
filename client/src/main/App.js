@@ -1,15 +1,15 @@
 import { Fragment, useState } from 'react';
 import { useQuery } from '@apollo/client';
-import './App.css';
+import '../App.css';
 import Main from './Main.js';
 import Login from './Login.js';
 import UserInfo from './UserInfo.js';
 
 import { ME } from './operations';
 
-import PostAndComment from './post/PostAndComment.js';
-import PostUpdateWindow from './post/PostUpdateWindow';
-import PostCreateWindow from './post/PostCreateWindow';
+import PostAndComment from '../post/PostAndComment.js';
+import PostUpdateWindow from '../post/PostUpdateWindow';
+import PostCreateWindow from '../post/PostCreateWindow';
 
 export const VIEW_STATE = {
   MAIN: 'main',

@@ -2,7 +2,7 @@ import { useMutation } from "@apollo/client";
 import { useCallback, useState } from "react";
 import { Grid, TextField, Button } from '@mui/material';
 
-import { CREATE_COMMENT } from "../operations";
+import { CREATE_COMMENT } from "../main/operations";
 
 const CommentCreate = ({ postId }) => {
   const [ content, setContent ] = useState('');

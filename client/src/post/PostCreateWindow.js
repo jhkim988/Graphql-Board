@@ -1,7 +1,7 @@
 import { useMutation } from "@apollo/client";
 import { useCallback, useState } from "react";
-import { CREATE_POST, CREATE_PHOTO } from '../operations.js'
-import { VIEW_STATE } from "../App.js";
+import { CREATE_POST, CREATE_PHOTO } from '../main/operations.js'
+import { VIEW_STATE } from "../main/App.js";
 import { TextField, ButtonGroup, Button } from '@mui/material';
 import { Stack } from "@mui/system";
 
