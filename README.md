@@ -7,7 +7,7 @@
 2. 게시글 조회, 게시글 작성, 댓글 작성, 추천(Good/Bad)
 3. 게시글을 조회하고 있을 때, 추천 수와 댓글을 소켓통신을 이용하여 실시간 업데이트
 4. 이미지 업로드
-5. 게시글 목록 페이지
+5. 게시글 목록 페이지네이션
 
 ## 사용 기술
 * Front-end: React, Apollo Client, MaterialUI
@@ -45,6 +45,12 @@ App ─┬─┬─ Login
 ```
 * 자세한 스키마 구조, 리졸버는 TypeDefs.graphql 파일, ./resolver 에서 확인 가능합니다.
 * npm run test를 실행하여 resolver unit test를 진행할 수 있습니다.
+## OAuth 로그인 개요
+1. OAuth 서비스에 애플리케이션을 등록하여 ClientID, ClientSecret, Redirect URL을 설정합니다.
+2. Client에서 이용자를 OAuth 로그인 화면으로 보냅니다. 이 때 쿼리스트링에 ClientID를 함께 넣어 보냅니다.
+3. OAuth에서 (1)에서 지정한 Redirect URL에 code를 보냅니다.
+4. 서버에서 OAuth 서비스에 ClientID, ClientSecret, code를 보내 token을 받아옵니다.
+5. token을 이용해 유저정보를 받아옵니다. 유저정보를 업데이트하고 login, loginType, token을 이용해 유저를 식별합니다.
 ## 소켓 통신 개요
 0. Apollo Server/Client에서는 Subscription이 Pub-Sub 패턴으로 구현돼 있습니다.
 PubSub 객체를 Apollo Server 컨텍스트에 넣어서 모든 리졸버에서 사용 가능합니다.
