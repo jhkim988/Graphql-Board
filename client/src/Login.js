@@ -3,12 +3,13 @@ import { useEffect } from "react";
 import { ButtonGroup, Button } from '@mui/material';
 import { GITHUB_LOGIN, ME } from './operations.js';
 
-const GITHUB_LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&scope=user`;
 
-const Login = ({ setIsLoggedIn }) => {
+const GithubLogin = ({ setIsLoggedIn }) => {
+  const GITHUB_LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&scope=user`;
   const client = useApolloClient();
   const [ githubLoginMutation ] = useMutation(GITHUB_LOGIN);
   useEffect(() => {
+    console.log(window.location.href);
     if (window.location.href.match('code=')) {
       const code = window.location.search.replace('?code=', '');
       githubLoginMutation({
@@ -29,11 +30,15 @@ const Login = ({ setIsLoggedIn }) => {
       });
     }
   }, []);
+  return <a href={GITHUB_LOGIN_URL}><Button>Github 로그인</Button></a>
+}
+
+const Login = ({ setIsLoggedIn }) => {
   return (
     <ButtonGroup>
-      <a href={GITHUB_LOGIN_URL}><Button>Github 로그인</Button></a>
-      <a href={GITHUB_LOGIN_URL}><Button>Naver 로그인</Button></a>
-      <a href={GITHUB_LOGIN_URL}><Button>Google 로그인</Button></a>
+      <GithubLogin />
+      {/* <NaverLogin /> */}
+      {/* <GoogleLogin /> */}
     </ButtonGroup>
   );
 }
