@@ -60,7 +60,7 @@ GITHUB_CLIENT_ID=[YOUT GITHUB CLIENT ID]
 GITHUB_CLIENT_SECRET=[YOUR GITHUB CLIENT SECRET]
 ```
 
-## 프로젝트 실행방법
+## 프로젝트 실행 방법
 ### ./server
 터미널 두 개를 열어 아래를 각각 실행시킵니다.
 ```
