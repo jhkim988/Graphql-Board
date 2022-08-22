@@ -36,7 +36,7 @@ const GithubLogin = ({ setIsLoggedIn }) => {
 const Login = ({ setIsLoggedIn }) => {
   return (
     <ButtonGroup>
-      <GithubLogin />
+      <GithubLogin setIsLoggedIn={setIsLoggedIn} />
       {/* <NaverLogin /> */}
       {/* <GoogleLogin /> */}
     </ButtonGroup>
