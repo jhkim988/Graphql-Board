@@ -14,7 +14,6 @@ import { createServer } from 'http';
 import { PubSub } from 'graphql-subscriptions';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 
-import cors from 'cors';
 import expressPlayground from 'graphql-playground-middleware-express';
 import dotenv from 'dotenv';
 import resolvers from './resolvers/index.js';
@@ -22,7 +21,7 @@ import resolvers from './resolvers/index.js';
 dotenv.config();
 
 const DB_HOST = process.env.DB_HOST;
-const DB_COLLECTION_NAME = process.env.DB_COLLECTION_NAME
+const DB_DATABASE_NAME = process.env.DB_DATABASE_NAME
 
 const typeDefs = readFileSync('./typeDefs.graphql', 'utf-8');
 const schema = makeExecutableSchema({ typeDefs, resolvers });
@@ -31,7 +30,7 @@ const start = async() => {
   const app = express();
   const httpServer = createServer(app); // for web socket
   const client = await MongoClient.connect(DB_HOST, {useNewUrlParser: true});
-  const db = client.db(DB_COLLECTION_NAME);
+  const db = client.db(DB_DATABASE_NAME);
   const pubsub = new PubSub();
 
   // apollo server config:
@@ -64,12 +63,6 @@ const start = async() => {
     ]
   });
   await server.start();
-
-  // CORS:
-  app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-  }));
 
   // Route:
   app.use('/img/photos', express.static(path.join(path.resolve(), 'assets', 'photos')));
