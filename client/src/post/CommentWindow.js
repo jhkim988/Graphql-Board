@@ -15,7 +15,7 @@ const Comment = ({ commentData }) => {
     deleteComment();
   }, []);
   return (
-    <TableRow spacing={2}>
+    <TableRow spacing={2} key={commentData._id}>
       <TableCell xs={2}>{commentData.commentedBy.name}</TableCell>
       <TableCell xs={8}>{commentData.content}</TableCell>
       <TableCell xs={1}>{dateFormat(commentData.created)}</TableCell>
