@@ -14,8 +14,9 @@ const Comment = ({ commentData }) => {
   const clickDeleteComment = useCallback(() => {
     deleteComment();
   }, []);
+  console.log(`key=${commentData._id}`);
   return (
-    <TableRow spacing={2} key={commentData._id}>
+    <TableRow spacing={2}>
       <TableCell xs={2}>{commentData.commentedBy.name}</TableCell>
       <TableCell xs={8}>{commentData.content}</TableCell>
       <TableCell xs={1}>{dateFormat(commentData.created)}</TableCell>
@@ -57,7 +58,7 @@ const CommentList = ({ post }) => {
     query: GET_POST,
     variables: { postId: post._id }
   });
-  return comments.map(comment => <Comment commentData={comment}/>);
+  return comments.map(comment => <Comment key={comment._id} commentData={comment}/>);
 }
 
 const CommentWindow = ({ post }) => {
